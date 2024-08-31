@@ -1,10 +1,10 @@
 === Same Category Posts ===
 Contributors: kometschuh, mkrdip
-Donate link: https://www.paypal.com/donate?hosted_button_id=RSR28JGA4M7JC
+Donate link: https://wordpress.org/support/plugin/same-category-posts/reviews/?filter=5
 Tags: related posts, related, custom post type, products, events
 Requires at least: 3.0
-Tested up to: 6.4
-Stable tag: 1.2.0
+Tested up to: 6.6
+Stable tag: 1.1.18
 License: GPLv2 or later 
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
