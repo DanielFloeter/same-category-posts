@@ -491,6 +491,11 @@ class Widget extends \WP_Widget {
 				}
 			}
 		}
+		
+		// If the current post has no terms for the selected taxonomy, don't render the widget.
+		if ( empty( $categories ) || is_wp_error( $categories ) ) {
+    	return;
+		}
 
 		// Excerpt length filter
 		if ( isset($instance["excerpt_length"]) && $instance["excerpt_length"] > 0 ) {
