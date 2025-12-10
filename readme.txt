@@ -105,7 +105,7 @@ To multiselect or clear terms in the "exclude"-text area hold CTRL-key + mouse c
 * Gutenberg Block support
 
 = 1.1.19 - Dec 10 2025  =
-* Cleanup for anchor title
+* Prevent widget rendering for posts without terms
 
 = 1.1.18 - March 01 2023  =
 * Cleanup for anchor title
