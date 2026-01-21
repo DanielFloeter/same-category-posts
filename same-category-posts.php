@@ -641,7 +641,7 @@ class Widget extends \WP_Widget {
 							} else 															// no category placeholder is used
 								$linkList = '<a href="' . get_category_link( $categories[0] ) . '">'. $instance['title'] . '</a>';
 						}
-						echo htmlspecialchars_decode(apply_filters('widget_title',$linkList));
+						echo wp_kses_post(apply_filters('widget_title',$linkList));
 					} else {
 						$categoryNames = "";
 						if ($categories) {
@@ -667,7 +667,7 @@ class Widget extends \WP_Widget {
 							else
 								$categoryNames = $instance['title'];
 						}
-						echo htmlspecialchars_decode(apply_filters('widget_title',$categoryNames));
+						echo wp_kses_post(apply_filters('widget_title',$categoryNames));
 					}
 					echo $after_title;
 				}
@@ -709,7 +709,7 @@ class Widget extends \WP_Widget {
 				foreach($widgetHTML as $val) {
 					// widget title
 					$haveItemHTML = false;
-					$ret = $before_title . htmlspecialchars_decode(apply_filters('widget_title',isset($val['title'])?$val['title']:"")) . $after_title;
+					$ret = $before_title . wp_kses_post(apply_filters('widget_title',isset($val['title'])?$val['title']:"")) . $after_title;
 					$count = 1;
 					$num_per_cat = (isset($instance['num_per_cate'])&&$instance['num_per_cate']!=0?($instance['num_per_cate']):99999);
 					foreach($val as $key) {
