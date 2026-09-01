@@ -76,6 +76,11 @@ export default function Edit( { attributes, setAttributes } ) {
 		dateFormat,
 		dateLink,
 		author,
+		thumb,
+		thumbTop,
+		thumbW,
+		thumbH,
+		useCssCropping,
 		disableCSS,
 		disableFontStyles,
 		disableThemeStyles,
@@ -223,6 +228,69 @@ export default function Edit( { attributes, setAttributes } ) {
 							} )
 						}
 					/>
+				</PanelBody>
+				<PanelBody title={ __( 'Thumbnails', 'same-posts' ) }>
+					<ToggleControl
+						label={ __( 'Show post thumbnail', 'same-posts' ) }
+						checked={ !! thumb }
+						onChange={ () => setAttributes( { thumb: ! thumb } ) }
+					/>
+					{ thumb && (
+						<>
+							<ToggleControl
+								label={ __( 'Thumbnail to top', 'same-posts' ) }
+								help={ __(
+									'Above the title instead of below it.',
+									'same-posts'
+								) }
+								checked={ !! thumbTop }
+								onChange={ () =>
+									setAttributes( { thumbTop: ! thumbTop } )
+								}
+							/>
+							<TextControl
+								label={ __( 'Width (in pixels)', 'same-posts' ) }
+								help={ __(
+									"0 uses the theme's thumbnail size.",
+									'same-posts'
+								) }
+								type="number"
+								min="0"
+								value={ thumbW }
+								onChange={ ( value ) =>
+									setAttributes( { thumbW: toCount( value ) } )
+								}
+							/>
+							<TextControl
+								label={ __(
+									'Height (in pixels)',
+									'same-posts'
+								) }
+								type="number"
+								min="0"
+								value={ thumbH }
+								onChange={ ( value ) =>
+									setAttributes( { thumbH: toCount( value ) } )
+								}
+							/>
+							<ToggleControl
+								label={ __(
+									'CSS crop to requested size',
+									'same-posts'
+								) }
+								help={ __(
+									'Needs both dimensions.',
+									'same-posts'
+								) }
+								checked={ !! useCssCropping }
+								onChange={ () =>
+									setAttributes( {
+										useCssCropping: ! useCssCropping,
+									} )
+								}
+							/>
+						</>
+					) }
 				</PanelBody>
 				<PanelBody title={ __( 'Post details', 'same-posts' ) }>
 					<ToggleControl

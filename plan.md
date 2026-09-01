@@ -8,8 +8,9 @@ Stand: 2026-09-01 · Branch `master`
 
 **Fortschritt:** Phase 0 (Aufräumen), Phase 1 (gemeinsamer Render-Kern) und
 die einfachen Controls aus Phase 2 sind erledigt, ebenso Phase 3 (Panel
-„Post details"). Offen: Phase 2b (`include_tax` / `exclude_terms`), Phase 4
-(Thumbnails) und Phase 5 (Abschluss).
+„Post details") und Phase 4 (Thumbnails). Offen: Phase 2b (`include_tax` /
+`exclude_terms`) und Phase 5 (Abschluss). Damit sind 28 der 30 Widget-Optionen
+im Block.
 
 ---
 
@@ -163,6 +164,13 @@ Die ersten vier Punkte sind in Phase 0 erledigt.
   serverseitig gerendert, braucht also kein `save`. Löschen oder behalten?
 - Der `example`-Block in `src/index.js` setzt ein Attribut `values`, das es
   nicht gibt — die Vorschau in der Inserter-Liste bleibt daher leer.
+- `show_thumb()` schreibt `class="…"href="…"` ohne Leerzeichen zwischen den
+  Attributen. Browser verzeihen das, korrekt ist es nicht.
+- `post_thumbnail_html()` rechnet `$width / $height` mit den Werten aus
+  `getimagesize()`. Schlägt das fehl (Datei fehlt), sind beide `null` und PHP 8
+  bricht mit `DivisionByZeroError` ab — auf PHP 5/7 gab es nur eine Warnung.
+  Seit Phase 1 bleibt in diesem Fall die Seite ohne Widget statt mit halb
+  ausgegebenem Widget, weil der Kern erst am Ende ausgibt.
 
 ---
 
@@ -277,10 +285,25 @@ bleibt unangetastet, nur der Instance ist ein anderer.
 — Datum mit WP-Format, mit eigenem Format und als Link, Excerpt mit und ohne
 Länge/Weiterlesen-Text, Kommentarzahl, Autor.
 
-### Phase 4 — Panel „Thumbnails"
+### Phase 4 — Panel „Thumbnails" — **erledigt**
 
 `thumb`, `thumbTop`, `thumb_w`, `thumb_h`, `use_css_cropping`.
 Breite/Höhe als Zahlenfelder-Paar, nur sichtbar bei aktivem `thumb`.
+
+`same_category_posts_get_image_size()` ist wie in 5.5 vorgesehen nach
+`includes/image-size.php` gezogen und von `tests/unit/ImageSizeTest.php`
+abgedeckt (7 Tests). Namespace und Funktionsname sind gleich geblieben, die
+Aufrufstelle in `post_thumbnail_html()` ist unverändert.
+
+**Eine bewusste Abweichung:** Das Widget blendet das ganze Panel aus, wenn das
+Theme keine `post-thumbnails` unterstützt. Im Block bleibt es sichtbar — die
+Optionen laufen dann in `show_thumb()` einfach ins Leere, genau wie im Widget.
+Nachziehbar über `select( 'core' ).getThemeSupports()`, falls gewünscht.
+
+**Geprüft:** Thumbnail steht per Default unter dem Titel, mit `thumbTop`
+darüber; `use_css_cropping` setzt die Klasse `same-category-post-css-cropping`;
+ausgeschaltet erscheint nichts. Der Charakterisierungslauf wurde mit
+Thumbnails wiederholt — alte und neue Fassung weiter byte-gleich.
 
 ### Phase 5 — Abschluss
 
@@ -374,12 +397,14 @@ System-PHP eine andere Version ist.
 
 ### 5.5 Kandidaten für die weiteren Phasen
 
-- `same_category_posts_get_image_size()` ist bereits eine reine Funktion
-  (Seitenverhältnis-Berechnung fürs CSS-Cropping) und ohne WordPress testbar,
-  sobald sie aus `same-category-posts.php` in `includes/` gezogen ist — relevant
-  für Phase 4.
+- ~~`same_category_posts_get_image_size()`~~ — erledigt in Phase 4, liegt in
+  `includes/image-size.php` mit `tests/unit/ImageSizeTest.php`. Die Tests
+  halten auch fest, dass PHP bei glatt teilbaren Integern einen `int` statt
+  eines `float` zurückgibt, die Rückgabewerte also gemischt typisiert sind.
 - Die Datumsformat-Auswahl aus `itemHTML()` (`date_format` vs.
-  `use_wp_date_format` vs. Default `j M Y`) ist reine Verzweigungslogik — Phase 3.
+  `use_wp_date_format` vs. Default `j M Y`) ist reine Verzweigungslogik. In
+  Phase 3 nicht ausgelagert, weil sie mitten in `itemHTML()` sitzt — bleibt
+  ein Kandidat.
 - Die Titel-Platzhalter `%cat%` / `%cat-all%` lassen sich als String-Ersetzung
   isolieren, wenn das Zusammenbauen der Kategorie-Links davon getrennt wird —
   Phase 1.

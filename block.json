@@ -105,6 +105,26 @@
         "author": {
             "type": "boolean",
             "default": false
+        },
+        "thumb": {
+            "type": "boolean",
+            "default": false
+        },
+        "thumbTop": {
+            "type": "boolean",
+            "default": false
+        },
+        "thumbW": {
+            "type": "number",
+            "default": 0
+        },
+        "thumbH": {
+            "type": "number",
+            "default": 0
+        },
+        "useCssCropping": {
+            "type": "boolean",
+            "default": false
         }
     },
     "usesContext": [ "postId" ],
