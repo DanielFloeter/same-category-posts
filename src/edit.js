@@ -1,10 +1,14 @@
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { Fragment, useEffect, useState } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 import {
 	Disabled,
+	FormTokenField,
 	PanelBody,
+	RadioControl,
 	SelectControl,
 	TextControl,
 	ToggleControl,
@@ -67,6 +71,8 @@ export default function Edit( { attributes, setAttributes } ) {
 		excludeStickyPosts,
 		excludeChildren,
 		excludeNoChildren,
+		includeTax,
+		excludeTerms,
 		excerpt,
 		excerptLength,
 		excerptMoreText,
@@ -89,6 +95,70 @@ export default function Edit( { attributes, setAttributes } ) {
 	const blockProps = useBlockProps( {
 		className: disableThemeStyles ? 'widget-title' : '',
 	} );
+
+	// Post types with their taxonomies and terms, grouped the same way the
+	// widget's form groups them. See same-posts-rest.php.
+	const [ taxonomyGroups, setTaxonomyGroups ] = useState( [] );
+
+	useEffect( () => {
+		let stillMounted = true;
+
+		apiFetch( { path: '/same-posts/v1/taxonomies' } )
+			.then( ( data ) => {
+				if ( stillMounted ) {
+					setTaxonomyGroups( Array.isArray( data ) ? data : [] );
+				}
+			} )
+			.catch( () => {
+				if ( stillMounted ) {
+					setTaxonomyGroups( [] );
+				}
+			} );
+
+		return () => {
+			stillMounted = false;
+		};
+	}, [] );
+
+	/**
+	 * The taxonomy chosen for a post type, or the widget's default for it.
+	 *
+	 * @param {Object} group One entry of taxonomyGroups.
+	 *
+	 * @return {string} Taxonomy name.
+	 */
+	const chosenTaxonomy = ( group ) =>
+		( includeTax && includeTax[ group.postType ] ) || group.defaultTaxonomy;
+
+	/**
+	 * Records the taxonomy a post type is matched by.
+	 *
+	 * @param {Object} group    One entry of taxonomyGroups.
+	 * @param {string} taxonomy Taxonomy name.
+	 */
+	const setChosenTaxonomy = ( group, taxonomy ) =>
+		setAttributes( {
+			includeTax: { ...includeTax, [ group.postType ]: taxonomy },
+		} );
+
+	/**
+	 * Records the excluded terms of one taxonomy. An empty selection drops the
+	 * taxonomy from the attribute rather than storing an empty list.
+	 *
+	 * @param {string}   taxonomy Taxonomy name.
+	 * @param {number[]} termIds  Term ids to exclude.
+	 */
+	const setExcludedTerms = ( taxonomy, termIds ) => {
+		const next = { ...excludeTerms };
+
+		if ( termIds.length ) {
+			next[ taxonomy ] = termIds;
+		} else {
+			delete next[ taxonomy ];
+		}
+
+		setAttributes( { excludeTerms: next } );
+	};
 
 	return (
 		<>
@@ -121,6 +191,93 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 				<PanelBody title={ __( 'Filter', 'same-posts' ) }>
+					{ taxonomyGroups.map( ( group ) => {
+						const chosen = chosenTaxonomy( group );
+						const taxonomy =
+							group.taxonomies.find(
+								( entry ) => entry.name === chosen
+							) || group.taxonomies[ 0 ];
+
+						if ( ! taxonomy ) {
+							return null;
+						}
+
+						const excluded = ( excludeTerms &&
+							excludeTerms[ taxonomy.name ] ) || [];
+
+						// Terms travel through FormTokenField by name, so a
+						// taxonomy with two identically named terms can only
+						// offer the first of them. The widget's multi-select
+						// has the same blind spot.
+						const nameOfTerm = ( id ) => {
+							const term = taxonomy.terms.find(
+								( entry ) => entry.id === id
+							);
+							return term ? term.name : null;
+						};
+						const idOfTerm = ( name ) => {
+							const term = taxonomy.terms.find(
+								( entry ) => entry.name === name
+							);
+							return term ? term.id : null;
+						};
+
+						return (
+							<Fragment key={ group.postType }>
+								<RadioControl
+									label={ sprintf(
+										/* translators: %s: post type label, e.g. Posts. */
+										__( 'Show %s with:', 'same-posts' ),
+										group.label
+									) }
+									selected={ chosen }
+									options={ group.taxonomies.map(
+										( entry ) => ( {
+											label: sprintf(
+												/* translators: %s: taxonomy label, e.g. Categories. */
+												__(
+													'Same "%s" and exclude:',
+													'same-posts'
+												),
+												entry.label
+											),
+											value: entry.name,
+										} )
+									) }
+									onChange={ ( value ) =>
+										setChosenTaxonomy( group, value )
+									}
+								/>
+								<FormTokenField
+									label={ sprintf(
+										/* translators: %s: taxonomy label, e.g. Categories. */
+										__(
+											'Excluded terms (%s)',
+											'same-posts'
+										),
+										taxonomy.label
+									) }
+									value={ excluded
+										.map( nameOfTerm )
+										.filter( Boolean ) }
+									suggestions={ taxonomy.terms.map(
+										( entry ) => entry.name
+									) }
+									__experimentalExpandOnFocus
+									onChange={ ( names ) =>
+										setExcludedTerms(
+											taxonomy.name,
+											names
+												.map( idOfTerm )
+												.filter(
+													( id ) => id !== null
+												)
+										)
+									}
+								/>
+							</Fragment>
+						);
+					} ) }
 					<SelectControl
 						label={ __( 'Sort by', 'same-posts' ) }
 						value={ sortBy }
@@ -218,7 +375,7 @@ export default function Edit( { attributes, setAttributes } ) {
 							'same-posts'
 						) }
 						help={ __(
-							'Applies to excluded terms, which can be chosen once the term filter lands.',
+							'Applies to the excluded terms above.',
 							'same-posts'
 						) }
 						checked={ !! excludeNoChildren }

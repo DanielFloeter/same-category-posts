@@ -70,6 +70,14 @@
             "type": "boolean",
             "default": false
         },
+        "includeTax": {
+            "type": "object",
+            "default": {}
+        },
+        "excludeTerms": {
+            "type": "object",
+            "default": {}
+        },
         "excerpt": {
             "type": "boolean",
             "default": false

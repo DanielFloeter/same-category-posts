@@ -6,11 +6,13 @@ anbieten — und dieselbe Ausgabe erzeugen — wie das klassische Widget
 
 Stand: 2026-09-01 · Branch `master`
 
-**Fortschritt:** Phase 0 (Aufräumen), Phase 1 (gemeinsamer Render-Kern) und
-die einfachen Controls aus Phase 2 sind erledigt, ebenso Phase 3 (Panel
-„Post details") und Phase 4 (Thumbnails). Offen: Phase 2b (`include_tax` /
-`exclude_terms`) und Phase 5 (Abschluss). Damit sind 28 der 30 Widget-Optionen
-im Block.
+**Fortschritt:** Phasen 0 bis 4 sind erledigt, damit sind alle 30
+Widget-Optionen im Block. Offen ist nur noch Phase 5 (Abschluss).
+
+Der Stand ist in der laufenden WordPress-Installation geprüft
+(`localhost/wordpress-6-3`, Beitrag 119 als Test-Entwurf): Das Widget rendert
+im Frontend unverändert, der Block liefert im Editor eine echte Liste, die
+Optionen wirken live, und die Konsole bleibt frei von Fehlern.
 
 ---
 
@@ -166,6 +168,10 @@ Die ersten vier Punkte sind in Phase 0 erledigt.
   nicht gibt — die Vorschau in der Inserter-Liste bleibt daher leer.
 - `show_thumb()` schreibt `class="…"href="…"` ohne Leerzeichen zwischen den
   Attributen. Browser verzeihen das, korrekt ist es nicht.
+- WordPress meldet in der Konsole: `apiVersion` 2 ist seit 6.9 veraltet,
+  Blöcke sollen auf 3 gehen, damit der Editor im iframe läuft. Betrifft auch
+  andere TipTopPress-Blöcke der Installation. Eine Zeile in `block.json` plus
+  ein Test im iframe-Editor — Kandidat für Phase 5.
 - `post_thumbnail_html()` rechnet `$width / $height` mit den Werten aus
   `getimagesize()`. Schlägt das fehl (Datei fehlt), sind beide `null` und PHP 8
   bricht mit `DivisionByZeroError` ab — auf PHP 5/7 gab es nur eine Warnung.
@@ -223,11 +229,10 @@ Zwei Verhaltenskorrekturen sind dabei bewusst mitgegangen:
 Der Test in WordPress selbst (Widget in der Sidebar, Block im Editor) steht
 noch aus.
 
-### Phase 2 — Panel „Filter" — **einfache Controls erledigt**
+### Phase 2 — Panel „Filter" — **erledigt**
 
 Controls in `src/edit.js`, Attribute in `block.json`, Mapping in
-`block_attributes_to_instance()`. Die ersten neun Zeilen der Tabelle stehen,
-die letzten zwei sind Phase 2b:
+`block_attributes_to_instance()`:
 
 | Attribut (Block) | Instance-Key | Control |
 |---|---|---|
@@ -246,9 +251,21 @@ die letzten zwei sind Phase 2b:
 `includeTax` / `excludeTerms` sind der aufwändigste Teil: Das Widget baut die
 Liste serverseitig aus `get_taxonomies()` + `get_terms()`. Im Editor braucht es
 dieselben Daten über die REST-API (`/wp/v2/taxonomies`, `/wp/v2/<taxonomy>`)
-oder einen eigenen Endpoint. **Empfehlung:** in einem separaten Schritt nach
-den einfachen Filter-Controls angehen — das ist Phase 2b und noch offen, siehe
-Frage 2.
+oder einen eigenen Endpoint. **Entschieden (Frage 2): eigener Endpoint.**
+
+`same-posts-rest.php` registriert `GET /wp-json/same-posts/v1/taxonomies`
+(Berechtigung: `edit_posts`). Die Route liefert genau die Struktur, die
+`Widget::form()` serverseitig aufbaut — nach Post-Type gruppiert, nur
+öffentliche Taxonomien, nur solche mit Terms, Terms inklusive leerer — und
+benutzt dafür `Widget::initPostTypesAndTaxes()`. Damit stammen die Zuordnung
+Taxonomie → Post-Type und die Default-Taxonomie je Post-Type aus derselben
+Methode wie im Widget; sie können nicht auseinanderlaufen.
+
+Im Editor: `RadioControl` je Post-Type („Show %s with:" / „Same \"%s\" and
+exclude:"), darunter ein `FormTokenField` mit den Terms der gewählten
+Taxonomie. Terms laufen dort über ihren Namen — zwei gleichnamige Terms einer
+Taxonomie sind also nicht unterscheidbar. Das Mehrfach-Select im Widget hat
+dieselbe Schwäche.
 
 **Geprüft (einfache Controls):** Zahlenfelder sind `TextControl type="number"`
 statt `NumberControl`, weil letzteres in `@wordpress/components` noch
@@ -322,6 +339,8 @@ Thumbnails wiederholt — alte und neue Fassung weiter byte-gleich.
 | `same-posts-block.php` | Render-Callback neu, Attribut→Instance-Mapping |
 | `same-category-posts.php` | `render_html()` + `build_html()` extrahiert, `widget()` ist Wrapper |
 | `includes/block-attributes.php` | Attribut→Instance-Abbildung (WP-frei, vorhanden) |
+| `includes/image-size.php` | Cropping-Arithmetik (WP-frei, aus der Widget-Datei gezogen) |
+| `same-posts-rest.php` | REST-Route für Taxonomien und Terms im Editor |
 | `tests/unit/` | Unit-Suite ohne WordPress (vorhanden) |
 | `phpunit.xml.dist`, `composer.json` | Testkonfiguration (vorhanden) |
 | `readme.txt` | Changelog |
@@ -422,8 +441,8 @@ Parameter, damit das Widget weiter seine Sidebar-Args durchgibt. Eine wählbare
 1. **Widget-Zukunft:** Bleibt das klassische Widget dauerhaft gleichwertig, oder
    ist der Block sein Nachfolger? Das entscheidet, wie viel Aufwand die
    Rückwärtskompatibilität von `widget()` rechtfertigt.
-2. **`include_tax` / `exclude_terms` im Editor:** REST-API mit mehreren Requests
-   oder ein eigener Endpoint, der die fertige Struktur liefert?
+2. ~~**`include_tax` / `exclude_terms` im Editor:**~~ entschieden, eigener
+   Endpoint, siehe Phase 2.
 3. **`isset()` vs. `! empty()`:** Mapping-Funktion (kleiner Eingriff, Widget
    bleibt unberührt) oder die Prüfungen im Kern begradigen (sauberer, testet
    sich aber auf dem Widget mit)?

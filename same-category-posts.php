@@ -17,6 +17,7 @@ define( 'SAME_CATEGORY_POSTS_VERSION', "1.2.0");
 
 require_once __DIR__ . '/includes/image-size.php';
 require_once __DIR__ . '/same-posts-block.php';
+require_once __DIR__ . '/same-posts-rest.php';
 
 /**
  * Register our styles
