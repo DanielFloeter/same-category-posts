@@ -9,9 +9,8 @@
     >
     <testsuites>
         <!--
-            The WordPress-free unit suite. The WordPress integration tests in
-            tests/ need a WordPress test suite plus a database and are run
-            separately via tests/phpunit.xml.
+            The WordPress-free unit suite. Everything that needs WordPress is
+            tested by hand for now; see plan.md, section 5.
         -->
         <testsuite name="unit">
             <directory suffix="Test.php">tests/unit</directory>

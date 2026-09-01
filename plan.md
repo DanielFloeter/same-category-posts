@@ -6,8 +6,9 @@ anbieten — und dieselbe Ausgabe erzeugen — wie das klassische Widget
 
 Stand: 2026-09-01 · Branch `master`
 
-**Fortschritt:** Phase 0 (Aufräumen) und Phase 1 (gemeinsamer Render-Kern)
-sind erledigt. Als nächstes Phase 2 (Panel „Filter").
+**Fortschritt:** Phase 0 (Aufräumen), Phase 1 (gemeinsamer Render-Kern) und
+die einfachen Controls aus Phase 2 sind erledigt. Als nächstes Phase 2b
+(`include_tax` / `exclude_terms`) oder Phase 3 (Panel „Post details").
 
 ---
 
@@ -213,10 +214,11 @@ Zwei Verhaltenskorrekturen sind dabei bewusst mitgegangen:
 Der Test in WordPress selbst (Widget in der Sidebar, Block im Editor) steht
 noch aus.
 
-### Phase 2 — Panel „Filter"
+### Phase 2 — Panel „Filter" — **einfache Controls erledigt**
 
 Controls in `src/edit.js`, Attribute in `block.json`, Mapping in
-`block_attributes_to_instance()`:
+`block_attributes_to_instance()`. Die ersten neun Zeilen der Tabelle stehen,
+die letzten zwei sind Phase 2b:
 
 | Attribut (Block) | Instance-Key | Control |
 |---|---|---|
@@ -236,7 +238,23 @@ Controls in `src/edit.js`, Attribute in `block.json`, Mapping in
 Liste serverseitig aus `get_taxonomies()` + `get_terms()`. Im Editor braucht es
 dieselben Daten über die REST-API (`/wp/v2/taxonomies`, `/wp/v2/<taxonomy>`)
 oder einen eigenen Endpoint. **Empfehlung:** in einem separaten Schritt nach
-den einfachen Filter-Controls angehen.
+den einfachen Filter-Controls angehen — das ist Phase 2b und noch offen, siehe
+Frage 2.
+
+**Geprüft (einfache Controls):** Zahlenfelder sind `TextControl type="number"`
+statt `NumberControl`, weil letzteres in `@wordpress/components` noch
+experimentell ist; leeres Feld und Unsinn werden zu `0`, was im Widget „ohne
+Limit" heißt. Jeder Schalter wurde gegen die Attrappen durchgerechnet: `num`
+begrenzt, `exclude_current_post` und `exclude_sticky_posts` entfernen die
+richtigen Beiträge, `num_per_cate` greift nur mit `separate_categories`,
+`sort_by` nimmt nur Werte aus der Whitelist, und `asc_sort_order` dreht die
+Reihenfolge — letzteres allerdings nur, weil `sortBy` per Default `date`
+mitschickt: ohne `sort_by` im Instance erzwingt der Render-Kern `date`/`DESC`
+und ignoriert die Richtung. Das ist Widget-Verhalten und bleibt so.
+
+Ein Hinweis zu `excludeNoChildren`: Die Option wirkt nur auf ausgeschlossene
+Terms, also erst mit Phase 2b. Sie ist trotzdem schon im Panel, mit
+entsprechendem Hilfetext.
 
 ### Phase 3 — Panel „Post details"
 
@@ -279,25 +297,30 @@ Breite/Höhe als Zahlenfelder-Paar, nur sichtbar bei aktivem `thumb`.
 
 ## 5. Tests
 
-### 5.1 Zwei getrennte Suiten
+### 5.1 Eine Suite
 
 | Verzeichnis | Art | Braucht | Status |
 |---|---|---|---|
-| `tests/` | WordPress-Integrationstests | WP-Test-Suite + Test-DB | veraltet, liegen vorerst |
-| `tests/unit/` | Unit-Tests ohne WordPress | nur PHP + PHPUnit | neu, lauffähig |
+| `tests/unit/` | Unit-Tests ohne WordPress | nur PHP + PHPUnit | lauffähig |
 
-Die bestehenden Integrationstests sind nicht mehr gültig: `test-main.php`
-instanziiert `SameCategoryPosts`, die Klasse heißt heute `samePosts\Widget`;
-`tests/bootstrap.php` verweist auf `../../../../../tests/phpunit/`, was in einer
-normalen Installation nicht existiert. Sie werden erst in Phase 1 gebraucht
-(Charakterisierungstests für die Widget-Ausgabe) und dann repariert.
+Die alten WordPress-Integrationstests sind gelöscht (Phase 2). Sie waren nicht
+mehr gültig: `test-main.php` instanziierte `SameCategoryPosts`, die Klasse heißt
+heute `samePosts\Widget`; `tests/bootstrap.php` verwies auf
+`../../../../../tests/phpunit/`, was in einer normalen Installation nicht
+existiert.
+
+Damit gibt es für alles, was WordPress braucht — und dazu gehört der
+Render-Kern —, kein automatisches Netz mehr. Die Byte-Gleichheit in Phase 1
+wurde mit einem Lauf gegen WordPress-Attrappen nachgewiesen, der außerhalb des
+Repos liegt. Offen: ob dieser Harness als `tests/characterization/`
+aufgenommen wird oder eine echte Integrationssuite neu aufgesetzt wird.
 
 ### 5.2 Was ohne WordPress testbar ist — und was nicht
 
 Nur Code, der keine WordPress-Funktionen aufruft. Daraus folgt eine
 Arbeitsregel für die Phasen: **reine Logik wandert nach `includes/`**, alles mit
-`get_posts()`, `get_the_date()` usw. bleibt in der Widget-Klasse und braucht die
-Integrationssuite.
+`get_posts()`, `get_the_date()` usw. bleibt in der Widget-Klasse und lässt sich
+nur mit WordPress oder gegen Attrappen prüfen.
 
 Der extrahierte Render-Kern `render_html()` aus Phase 1 ist damit ausdrücklich
 *kein* Kandidat für die Unit-Suite — er lebt von WP-Query und Loop.
@@ -334,8 +357,7 @@ vendor/bin/phpunit
 ```
 
 Ohne Composer genügt `phpunit.phar` im Plugin-Ordner: `php phpunit.phar`.
-Die Konfiguration liegt in `phpunit.xml.dist` und umfasst nur `tests/unit`;
-die Integrationssuite behält ihre eigene `tests/phpunit.xml`.
+Die Konfiguration liegt in `phpunit.xml.dist` und umfasst nur `tests/unit`.
 
 XAMPP-PHP liegt unter `/Applications/XAMPP/xamppfiles/bin/php`, falls das
 System-PHP eine andere Version ist.

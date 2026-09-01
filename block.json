@@ -34,7 +34,39 @@
             "type": "boolean",
             "default": false
         },
+        "sortBy": {
+            "type": "string",
+            "default": "date"
+        },
         "ascSortOrder": {
+            "type": "boolean",
+            "default": false
+        },
+        "num": {
+            "type": "number",
+            "default": 0
+        },
+        "separateCategories": {
+            "type": "boolean",
+            "default": false
+        },
+        "numPerCate": {
+            "type": "number",
+            "default": 0
+        },
+        "excludeCurrentPost": {
+            "type": "boolean",
+            "default": false
+        },
+        "excludeStickyPosts": {
+            "type": "boolean",
+            "default": false
+        },
+        "excludeChildren": {
+            "type": "boolean",
+            "default": false
+        },
+        "excludeNoChildren": {
             "type": "boolean",
             "default": false
         }
