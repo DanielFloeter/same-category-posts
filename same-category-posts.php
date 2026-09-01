@@ -8,6 +8,7 @@ Version: 1.3.0
 Author URI: https://profiles.wordpress.org/kometschuh/
 Requires at least: 6.3
 Requires PHP: 7.2
+Text Domain: same-posts
 */
 
 namespace samePosts;
@@ -117,9 +118,9 @@ class Widget extends \WP_Widget {
 		$widget_ops = array(
 			'show_instance_in_rest' => true,
 			'classname' => 'same-category-posts', 
-			'description' => __('List posts from same category in sidebar based on shown post\'s category')
+			'description' => __('List posts from same category in sidebar based on shown post\'s category', 'same-posts')
 		);
-		parent::__construct('same-category-posts', __('Same Category Posts'), $widget_ops);
+		parent::__construct('same-category-posts', __('Same Category Posts', 'same-posts'), $widget_ops);
 	}
 	
 	/*
@@ -906,25 +907,25 @@ class Widget extends \WP_Widget {
 		
 		?>
 		<div class="same-category-widget-cont">
-			<h4 data-panel="title"><?php _e('Title')?></h4>
+			<h4 data-panel="title"><?php _e('Title', 'same-posts')?></h4>
 			<div>
 				<p>
 					<label for="<?php echo $this->get_field_id("title_link"); ?>">
 						<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("title_link"); ?>" name="<?php echo $this->get_field_name("title_link"); ?>"<?php checked( (bool) $instance["title_link"], true ); ?> />
-						<?php _e( 'Make widget title link' ); ?>
+						<?php _e( 'Make widget title link', 'same-posts' ); ?>
 					</label>
 				</p>
 				
 				<p>
 					<label for="<?php echo $this->get_field_id("hide_title"); ?>">
 						<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("hide_title"); ?>" name="<?php echo $this->get_field_name("hide_title"); ?>"<?php checked( (bool) $instance["hide_title"], true ); ?> />
-						<?php _e( 'Hide title' ); ?>
+						<?php _e( 'Hide title', 'same-posts' ); ?>
 					</label>
 				</p>
 				
 				<p>
 					<label for="<?php echo $this->get_field_id("title"); ?>">
-						<?php _e( 'Title *' ); ?>:
+						<?php _e( 'Title *', 'same-posts' ); ?>:
 						<input 
 							style="width:80%;" 
 							class="widefat" 
@@ -936,7 +937,7 @@ class Widget extends \WP_Widget {
 					</label>
 				</p>
 			</div>
-			<h4 data-panel="filter"><?php _e('Filter')?></h4>
+			<h4 data-panel="filter"><?php _e('Filter', 'same-posts')?></h4>
 			<div>
 				<?php	
 					// get taxonomies except for the built-in
@@ -978,7 +979,7 @@ class Widget extends \WP_Widget {
 										id="<?php echo $this->get_field_id( $taxname ); ?>" 
 										value="<?php echo $taxname ?>"
 										<?php checked( (bool) ($instance['include_tax'][$post_type] == $taxname), true ); ?> />
-									<?php printf( __( 'Same "%s" and exclude:' ), esc_html($tax->labels->name)); ?>
+									<?php printf( __( 'Same "%s" and exclude:', 'same-posts' ), esc_html($tax->labels->name)); ?>
 								</label>
 							</p>
 							<?php
@@ -1015,13 +1016,13 @@ class Widget extends \WP_Widget {
 								id="<?php echo $this->get_field_id("exclude_no_children"); ?>" 
 								name="<?php echo $this->get_field_name("exclude_no_children"); ?>"
 								<?php checked( (bool) $instance["exclude_no_children"], true ); ?> />
-									<?php _e( 'Perform the exclusion without children' ); ?>
+									<?php _e( 'Perform the exclusion without children', 'same-posts' ); ?>
 						</label>
 					</p>
 
 				<p>
 					<label for="<?php echo $this->get_field_id("sort_by"); ?>">
-						<?php _e('Sort by'); ?>:
+						<?php _e('Sort by', 'same-posts'); ?>:
 						<select id="<?php echo $this->get_field_id("sort_by"); ?>" name="<?php echo $this->get_field_name("sort_by"); ?>">
 							<option value="date"<?php selected( $instance["sort_by"], "date" ); ?>>Date</option>
 							<option value="title"<?php selected( $instance["sort_by"], "title" ); ?>>Title</option>
@@ -1037,27 +1038,27 @@ class Widget extends \WP_Widget {
 							id="<?php echo $this->get_field_id("asc_sort_order"); ?>" 
 							name="<?php echo $this->get_field_name("asc_sort_order"); ?>"
 							<?php checked( (bool) $instance["asc_sort_order"], true ); ?> />
-								<?php _e( 'Reverse sort order (ascending)' ); ?>
+								<?php _e( 'Reverse sort order (ascending)', 'same-posts' ); ?>
 					</label>
 				</p>
 				
 				<p>
 					<label for="<?php echo $this->get_field_id("separate_categories"); ?>">
 						<input onchange="javascript:scpwp_namespace.toggleSeparateCategoriesPanel(this)" type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("separate_categories"); ?>" name="<?php echo $this->get_field_name("separate_categories"); ?>"<?php checked( (bool) $instance["separate_categories"], true ); ?> />
-						<?php _e( 'Separate terms (If more than one assigned)' ); ?>
+						<?php _e( 'Separate terms (If more than one assigned)', 'same-posts' ); ?>
 					</label>
 				</p>
 
 				<p class="scpwp-separate-categories-panel" style="border-left:5px solid #F1F1F1;padding-left:10px;display:<?php echo (isset($separate_categories) && $separate_categories) ? 'block' : 'none'?>">
 					<label for="<?php echo $this->get_field_id("num_per_cate"); ?>">
-						<?php _e('Max. number of posts per separated categories'); ?>:
+						<?php _e('Max. number of posts per separated categories', 'same-posts'); ?>:
 						<input style="width: 30%; text-align: center;" id="<?php echo $this->get_field_id("num_per_cate"); ?>" name="<?php echo $this->get_field_name("num_per_cate"); ?>" type="number" min="0" value="<?php echo absint($instance["num_per_cate"]); ?>" size='3' />
 					</label>
 				</p>
 				
 				<p>
 					<label for="<?php echo $this->get_field_id("num"); ?>">
-						<?php _e('Number of posts to show (overall)'); ?>:
+						<?php _e('Number of posts to show (overall)', 'same-posts'); ?>:
 						<input style="width:30%;" style="text-align: center;" id="<?php echo $this->get_field_id("num"); ?>" name="<?php echo $this->get_field_name("num"); ?>" type="number" min="0" value="<?php echo absint($instance["num"]); ?>" size='3' />
 					</label>
 				</p>
@@ -1065,14 +1066,14 @@ class Widget extends \WP_Widget {
 				<p>
 					<label for="<?php echo $this->get_field_id("exclude_current_post"); ?>">
 						<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("exclude_current_post"); ?>" name="<?php echo $this->get_field_name("exclude_current_post"); ?>"<?php checked( (bool) $instance["exclude_current_post"], true ); ?> />
-						<?php _e( 'Exclude current post' ); ?>
+						<?php _e( 'Exclude current post', 'same-posts' ); ?>
 					</label>
 				</p>
 
 				<p>
 					<label for="<?php echo $this->get_field_id("exclude_sticky_posts"); ?>">
 						<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("exclude_sticky_posts"); ?>" name="<?php echo $this->get_field_name("exclude_sticky_posts"); ?>"<?php checked( (bool) $instance["exclude_sticky_posts"], true ); ?> />
-						<?php _e( 'Exclude sticky posts' ); ?>
+						<?php _e( 'Exclude sticky posts', 'same-posts' ); ?>
 					</label>
 				</p>
 
@@ -1082,12 +1083,12 @@ class Widget extends \WP_Widget {
 							id="<?php echo $this->get_field_id("exclude_children"); ?>" 
 							name="<?php echo $this->get_field_name("exclude_children"); ?>"
 							<?php checked( (bool) $instance["exclude_children"], true ); ?> />
-								<?php _e( 'Exclude  children' ); ?>
+								<?php _e( 'Exclude  children', 'same-posts' ); ?>
 					</label>
 				</p>
 
 			</div>
-			<h4 data-panel="thumbnails"><?php _e('Thumbnails')?></h4>
+			<h4 data-panel="thumbnails"><?php _e('Thumbnails', 'same-posts')?></h4>
 			<div>
 				<?php 
 					if ( function_exists('the_post_thumbnail') && current_theme_supports("post-thumbnails") ) : 
@@ -1095,7 +1096,7 @@ class Widget extends \WP_Widget {
 					<p>
 						<label for="<?php echo $this->get_field_id("thumb"); ?>">
 							<input onchange="javascript:scpwp_namespace.toggleShowPostThumbnailPanel(this)" type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("thumb"); ?>" name="<?php echo $this->get_field_name("thumb"); ?>"<?php checked( (bool) $instance["thumb"], true ); ?> />
-							<?php _e( 'Show post thumbnail' ); ?>
+							<?php _e( 'Show post thumbnail', 'same-posts' ); ?>
 						</label>
 					</p>
 					
@@ -1103,13 +1104,13 @@ class Widget extends \WP_Widget {
 						<p>
 							<label for="<?php echo $this->get_field_id("thumbTop"); ?>">
 								<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("thumbTop"); ?>" name="<?php echo $this->get_field_name("thumbTop"); ?>"<?php checked( (bool) $instance["thumbTop"], true ); ?> />
-								<?php _e( 'Thumbnail to top' ); ?>
+								<?php _e( 'Thumbnail to top', 'same-posts' ); ?>
 							</label>
 						</p>
 
 						<p>
 							<label>
-								<?php _e('Thumbnail dimensions (in pixels)'); ?>:<br />
+								<?php _e('Thumbnail dimensions (in pixels)', 'same-posts'); ?>:<br />
 								<label for="<?php echo $this->get_field_id("thumb_w"); ?>">
 									Width: <input class="widefat" style="width:30%;" type="number" min="1" id="<?php echo $this->get_field_id("thumb_w"); ?>" name="<?php echo $this->get_field_name("thumb_w"); ?>" value="<?php echo $instance["thumb_w"]; ?>" />
 								</label>
@@ -1123,7 +1124,7 @@ class Widget extends \WP_Widget {
 						<p>
 							<label for="<?php echo $this->get_field_id("use_css_cropping"); ?>">
 								<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("use_css_cropping"); ?>" name="<?php echo $this->get_field_name("use_css_cropping"); ?>"<?php checked( (bool) $instance["use_css_cropping"], true ); ?> />
-								<?php _e( 'CSS crop to requested size' ); ?>
+								<?php _e( 'CSS crop to requested size', 'same-posts' ); ?>
 							</label>
 						</p>
 					</div>
@@ -1131,42 +1132,42 @@ class Widget extends \WP_Widget {
 					endif; 
 				?>
 			</div>
-			<h4 data-panel="details"><?php _e('Post details')?></h4>
+			<h4 data-panel="details"><?php _e('Post details', 'same-posts')?></h4>
 			<div>
 				<p>
 					<label for="<?php echo $this->get_field_id("excerpt"); ?>">
 						<input onchange="javascript:scpwp_namespace.toggleShowPostExcerptPanel(this)" type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("excerpt"); ?>" name="<?php echo $this->get_field_name("excerpt"); ?>"<?php checked( (bool) $instance["excerpt"], true ); ?> />
-						<?php _e( 'Show post excerpt' ); ?>
+						<?php _e( 'Show post excerpt', 'same-posts' ); ?>
 					</label>
 				</p>
 				
 				<div class="scpwp-show-post-excerpt-panel" style="border-left:5px solid #F1F1F1;padding-left:10px;display:<?php echo (isset($excerpt) && $excerpt) ? 'block' : 'none'?>">
 					<p>
 						<label for="<?php echo $this->get_field_id("excerpt_length"); ?>">
-							<?php _e( 'Excerpt length (in words):' ); ?>
+							<?php _e( 'Excerpt length (in words):', 'same-posts' ); ?>
 						</label>
-						<input style="width:30%; text-align: center;" placeholder="<?php _e('55')?>" type="number" min="0" id="<?php echo $this->get_field_id("excerpt_length"); ?>" name="<?php echo $this->get_field_name("excerpt_length"); ?>" value="<?php echo $instance["excerpt_length"]; ?>" size="3" />
+						<input style="width:30%; text-align: center;" placeholder="<?php _e('55', 'same-posts')?>" type="number" min="0" id="<?php echo $this->get_field_id("excerpt_length"); ?>" name="<?php echo $this->get_field_name("excerpt_length"); ?>" value="<?php echo $instance["excerpt_length"]; ?>" size="3" />
 					</p>
 					
 					<p>
 						<label for="<?php echo $this->get_field_id("excerpt_more_text"); ?>">
-							<?php _e( 'Excerpt \'more\' text:' ); ?>
+							<?php _e( 'Excerpt \'more\' text:', 'same-posts' ); ?>
 						</label>
-						<input class="widefat" style="width:50%;" placeholder="<?php _e('... more')?>" id="<?php echo $this->get_field_id("excerpt_more_text"); ?>" name="<?php echo $this->get_field_name("excerpt_more_text"); ?>" type="text" value="<?php echo esc_attr($instance["excerpt_more_text"]); ?>" />
+						<input class="widefat" style="width:50%;" placeholder="<?php _e('... more', 'same-posts')?>" id="<?php echo $this->get_field_id("excerpt_more_text"); ?>" name="<?php echo $this->get_field_name("excerpt_more_text"); ?>" type="text" value="<?php echo esc_attr($instance["excerpt_more_text"]); ?>" />
 					</p>
 				</div>
 				
 				<p>
 					<label for="<?php echo $this->get_field_id("comment_num"); ?>">
 						<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("comment_num"); ?>" name="<?php echo $this->get_field_name("comment_num"); ?>"<?php checked( (bool) $instance["comment_num"], true ); ?> />
-						<?php _e( 'Show number of comments' ); ?>
+						<?php _e( 'Show number of comments', 'same-posts' ); ?>
 					</label>
 				</p>
 				
 				<p>
 					<label for="<?php echo $this->get_field_id("date"); ?>" onchange="javascript:scpwp_namespace.toggleDatePanel(this)">
 						<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("date"); ?>" name="<?php echo $this->get_field_name("date"); ?>"<?php checked( (bool) $instance["date"], true ); ?> />
-						<?php _e( 'Show post date' ); ?>
+						<?php _e( 'Show post date', 'same-posts' ); ?>
 					</label>
 				</p>
 				<div class="cpwp_ident scpwp-data-panel-date" style="display:<?php echo ((bool) $date) ? 'block' : 'none'?>">
@@ -1195,7 +1196,7 @@ class Widget extends \WP_Widget {
 				<p>
 					<label for="<?php echo $this->get_field_id("author"); ?>">
 						<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id("author"); ?>" name="<?php echo $this->get_field_name("author"); ?>"<?php checked( (bool) $instance["author"], true ); ?> />
-						<?php _e( 'Show post author' ); ?>
+						<?php _e( 'Show post author', 'same-posts' ); ?>
 					</label>
 				</p>
 			</div>

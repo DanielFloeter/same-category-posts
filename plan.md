@@ -483,12 +483,24 @@ Vorbereitet:
    Ein fünftes für die Block-Seitenleiste fehlt. Die Aufnahme muss aus einer
    englischen Installation kommen — in der deutschen Testinstallation kommen
    Post-Type- und Taxonomie-Labels aus WordPress und wären gemischt.
-3. **Text Domain.** Der Header deklariert keine, der Code benutzt drei
-   Varianten: `'same-posts'` (im Block durchgehend), gar keine Domain (29
-   Stellen in `same-category-posts.php`, die damit gegen die WordPress-eigene
-   Domain übersetzt werden) und `'same-posts'` in drei PHP-Strings. Für
-   wp.org-Sprachpakete müsste die Domain dem Slug `same-category-posts`
-   entsprechen. Das ist ein eigener Durchgang, keine Zeile.
+3. ~~**Text Domain.**~~ Entschieden: **`same-posts`**. Der Plugin-Header
+   deklariert sie jetzt, und alle 31 `__()`/`_e()`-Aufrufe in
+   `same-category-posts.php`, die vorher ohne Domain waren, benutzen sie.
+   `block.json` und `src/edit.js` taten es schon.
+
+   Zwei Folgen davon, bewusst in Kauf genommen:
+
+   - Die 31 Strings fielen vorher auf die WordPress-eigene Domain zurück, wo
+     Allerweltswörter wie „Title", „Filter" oder „Date" übersetzt vorliegen.
+     Mit eigener Domain erscheinen sie auf nicht-englischen Installationen
+     englisch, bis es Übersetzungen für `same-posts` gibt. Auf die
+     Core-Domain zu bauen ist ausdrücklich unerwünscht, deshalb der Schnitt.
+   - wp.org-Sprachpakete heißen nach dem Slug (`same-category-posts-de_DE.mo`)
+     und werden für die Domain `same-posts` nicht geladen; `plugin-check`
+     wird das anmerken. Übersetzungen müssen also als
+     `wp-content/languages/plugins/same-posts-<locale>.mo` liegen — die
+     Just-in-time-Ladung von WordPress findet sie dort ohne
+     `load_plugin_textdomain()`.
 
 ## 7. Offene Fragen
 
