@@ -127,7 +127,10 @@ class Widget extends \WP_Widget {
 		global $post;
 
 		$post_thumbnail_id = get_post_thumbnail_id( $post->ID );
-		if ( ! $post_thumbnail_id && $this->instance['default_thunmbnail'] ) {
+
+		// The typo in the key is original and stays: form() never writes it,
+		// but an instance stored by an older version might.
+		if ( ! $post_thumbnail_id && ! empty( $this->instance['default_thunmbnail'] ) ) {
 			$post_thumbnail_id = $this->instance['default_thunmbnail'];
 		}
 
@@ -140,7 +143,7 @@ class Widget extends \WP_Widget {
 				$thumbSize['crop']   = (bool) get_option( "{$thumb}_crop" );
 			}
 		}
-		if ( $thumbSize['crop'] ) {
+		if ( ! empty( $thumbSize['crop'] ) ) {
 			$thumbSize[0] = $size[0] <= $thumbSize['width'] ? ( $thumbSize['width'] + 1 ) : $size[0];
 			$thumbSize[1] = $size[1] <= $thumbSize['height'] ? ( $thumbSize['height'] + 1 ) : $size[1];
 		}
@@ -155,12 +158,27 @@ class Widget extends \WP_Widget {
 		$meta = image_get_intermediate_size($post_thumbnail_id,$size);
 
 		$post_img = wp_get_attachment_metadata($post_thumbnail_id, $size);
+
+		if ( empty( $post_img['file'] ) ) {
+			return $html; // No metadata to find the file with.
+		}
+
 		$meta['file'] = basename( $post_img['file'] );
 
 		$origfile = get_attached_file( $post_thumbnail_id, true); // the location of the full file
 		$file =	dirname($origfile) .'/'.$meta['file']; // the location of the file displayed as thumb
-		list( $width, $height ) = getimagesize($file);  // get actual size of the thumb file
-		
+
+		// A deleted or unreadable file makes wp_getimagesize() return false.
+		// Dividing by its dimensions would abort the whole request with a
+		// DivisionByZeroError on PHP 8, so bail out with the unchanged HTML.
+		$dimensions = wp_getimagesize( $file );
+
+		if ( ! $dimensions || empty( $dimensions[0] ) || empty( $dimensions[1] ) ) {
+			return $html;
+		}
+
+		list( $width, $height ) = $dimensions;  // actual size of the thumb file
+
 		if ($width / $height == $this->instance['thumb_w'] / $this->instance['thumb_h']) {
 			// image is same ratio as asked for, nothing to do here as the browser will handle it correctly
 			;
@@ -225,7 +243,7 @@ class Widget extends \WP_Widget {
                 $thumbSize['crop']   = (bool) get_option( "{$thumb}_crop" );
             }
         }
-        if ( $thumbSize['crop'] ) {
+        if ( ! empty( $thumbSize['crop'] ) ) {
             $size[0] = $size[0] <= $thumbSize['width'] ? ( $thumbSize['width'] + 1 ) : $size[0];
             $size[1] = $size[1] <= $thumbSize['height'] ? ( $thumbSize['height'] + 1 ) : $size[1];
         }
@@ -252,9 +270,11 @@ class Widget extends \WP_Widget {
 				has_post_thumbnail() ) {
 			$ret .= '<a ';
 			$use_css_cropping = isset($this->instance['use_css_cropping']) ? "same-category-post-css-cropping" : "";
-			$ret .= 'class="same-category-post-thumbnail ' . $use_css_cropping . '"';
+			$ret .= 'class="same-category-post-thumbnail ' . $use_css_cropping . '" ';
 			$ret .= 'href="' . get_the_permalink() . '" title="' . htmlspecialchars( get_the_title() ) . '">';
-			$ret .= $this->the_post_thumbnail( array($this->instance['thumb_w'],$this->instance['thumb_h']));
+			$thumb_w = isset( $this->instance['thumb_w'] ) ? $this->instance['thumb_w'] : 0;
+			$thumb_h = isset( $this->instance['thumb_h'] ) ? $this->instance['thumb_h'] : 0;
+			$ret .= $this->the_post_thumbnail( array( $thumb_w, $thumb_h ) );
 			$ret .= '</a>';
 		}
 		return $ret;
@@ -478,14 +498,15 @@ class Widget extends \WP_Widget {
 		$this->initPostTypesAndTaxes($instance);
 
 		// if archive page
-		$include_tax_save = array();
+		$include_tax_save = isset( $instance['include_tax'] ) ? $instance['include_tax'] : array();
 		if( is_archive() ) {
 			$term = get_queried_object();
-			$post_type = get_post_type($term->slag);
-			$include_tax_save = $instance['include_tax'];
+			// Was get_post_type( $term->slag ) -- a typo for slug, and a term
+			// slug is not something get_post_type() can use anyway. The call
+			// therefore always fell back to the global post, which is what
+			// get_post_type() without an argument does, minus the warning.
+			$post_type = get_post_type();
 			$instance['include_tax'] = array( $post_type => $term->taxonomy );
-		} else {
-			$include_tax_save = $instance['include_tax'];
 		}
 
 		$taxonomies     = null;
@@ -508,7 +529,13 @@ class Widget extends \WP_Widget {
 		// Get post taxonomies
 		$categories = null;
 		foreach ($taxes as $tax) {
+			if ( ! isset( $instance['post_types'][$tax]['post_type'] ) ) {
+				continue;
+			}
 			$post_type = $instance['post_types'][$tax]['post_type'];
+			if ( ! isset( $instance['include_tax'][$post_type] ) ) {
+				continue;
+			}
 			if ($tax == $instance['include_tax'][$post_type]) {
 				if ( is_archive() ) {
 					// if archive page
@@ -728,13 +755,19 @@ class Widget extends \WP_Widget {
 					$object_taxes = get_object_taxonomies( $post, 'objects' );
 					$post_categories = null;
 					foreach ( $object_taxes as $tax ) {
+						if ( ! isset( $instance['post_types'][$tax->name]['post_type'] ) ) {
+							continue;
+						}
 						$post_type = $instance['post_types'][$tax->name]['post_type'];
+						if ( ! isset( $instance['include_tax'][$post_type] ) ) {
+							continue;
+						}
 						if ($tax->name == $instance['include_tax'][$post_type]) {
 							$post_categories = get_the_terms($post->ID,$tax->name);
 							break;
 						}
 					} 
-					foreach ($post_categories as $val) {
+					foreach ( (array) $post_categories as $val ) {
 						if ( in_array( $val, $categories ) ) {
 							$widgetHTML[$val->name][$post->ID]['itemHTML'] = $this->itemHTML($instance,$current_post_id);
 							$widgetHTML[$val->name][$post->ID]['ID'] = $post->ID;

@@ -1,11 +1,8 @@
-import { registerBlockType } from '@wordpress/blocks';
-import { useBlockProps } from '@wordpress/block-editor';
-import { createBlock } from '@wordpress/blocks';
+import { createBlock, registerBlockType } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 
 import './style.scss';
 import Edit from './edit';
-import Save from './save';
 import Icon from './icon';
 
 import metadata from './../block.json';
@@ -33,20 +30,6 @@ registerBlockType(name, {
         __('events'),
         __('tiptoppress'),
     ],
-    example: {
-        attributes: {
-            values: '<ul>' +
-                '<li>' +
-                '<div><a class="cat-post-title">dolorem eum fugiat quo voluptas</a><div>' +
-                '<p class="cpwp-excerpt-text">But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?</p>' +
-                '</li>' +
-                '<li>' +
-                '<div><a class="cat-post-title">gummies tootsie roll</a><div>' +
-                '<p class="cpwp-excerpt-text">Cake jujubes jelly beans. Marzipan soufflé gummies gummi bears oat cake chocolate jelly icing. Cotton candy croissant wafer cake apple pie juj.</p>' +
-                '</li>' +
-                '</ul>',
-        },
-    },
     transforms: {
         from: [{
             type: 'block',
@@ -66,14 +49,7 @@ registerBlockType(name, {
 
         }, ]
     },
+    // No save function: the block is rendered on the server, see
+    // render_same_posts_block() in same-posts-block.php.
     edit: Edit,
-
-    /**
-     * @see ./save.js
-     */
-    //save: Save,
-    // save: () => {
-    // 	const blockProps = useBlockProps.save();
-    // 	return <div { ...blockProps }> Hello in Save.</div>;
-    // },
 });

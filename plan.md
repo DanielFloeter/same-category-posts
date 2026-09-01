@@ -7,7 +7,8 @@ anbieten — und dieselbe Ausgabe erzeugen — wie das klassische Widget
 Stand: 2026-09-01 · Branch `master`
 
 **Fortschritt:** Alle Phasen sind erledigt. Der Block bietet dieselben
-Optionen wie das Widget und beide benutzen denselben Render-Kern.
+Optionen wie das Widget und beide benutzen denselben Render-Kern. Der
+Kleinkram aus 2.5 ist abgearbeitet, siehe dort.
 
 Der Stand ist in der laufenden WordPress-Installation geprüft
 (`localhost/wordpress-6-3`, Beitrag 119 als Test-Entwurf): Das Widget rendert
@@ -153,28 +154,39 @@ Die ersten vier Punkte sind in Phase 0 erledigt.
   Zeile entfernen.
 - `src/edit.js` liest `titleLevel` aus den Attributen; das Attribut existiert
   nicht → `titleTagName` ist `"hundefined"` (aktuell ungenutzt).
-- `post_thumbnail_html()` liest `$this->instance['default_thunmbnail']` (Typo
-  im Original) — Key existiert in `form()` nicht. Beim Refactoring stehen
-  lassen oder bewusst mitziehen, nicht stillschweigend umbenennen.
-  Steht noch (Phase 4).
-- Noch offen, in Phase 1 nur festgehalten: `build_html()` liest auf
-  Archivseiten `get_post_type($term->slag)` — `slag` statt `slug`, also immer
-  `null`. Praktisch harmlos, weil `get_post_type(null)` auf den globalen Post
-  zurückfällt; beim Aufräumen bewusst entscheiden, nicht nebenbei ändern.
-- `src/save.js` ist toter Code (in `index.js` auskommentiert) und
-  destrukturiert die in Phase 0 entfernten Attribute. Der Block wird
-  serverseitig gerendert, braucht also kein `save`. Löschen oder behalten?
-- Der `example`-Block in `src/index.js` setzt ein Attribut `values`, das es
-  nicht gibt — die Vorschau in der Inserter-Liste bleibt daher leer.
-- `show_thumb()` schreibt `class="…"href="…"` ohne Leerzeichen zwischen den
-  Attributen. Browser verzeihen das, korrekt ist es nicht.
+- ~~`post_thumbnail_html()` liest `$this->instance['default_thunmbnail']`~~ —
+  jetzt mit `! empty()` geprüft. Der Tippfehler im Key bleibt bewusst stehen:
+  `form()` schreibt ihn nie, ein von einer alten Version gespeicherter
+  Instance könnte ihn aber enthalten.
+- ~~`build_html()` liest auf Archivseiten `get_post_type($term->slag)`~~ —
+  ersetzt durch `get_post_type()` ohne Argument. Das ist exakt dasselbe
+  Verhalten (der Tippfehler ergab `null`, und ein Term-Slug wäre für
+  `get_post_type()` ohnehin kein gültiges Argument), nur ohne die 23 Warnungen
+  pro Seitenaufbau.
+- ~~`src/save.js` ist toter Code~~ — gelöscht. Der Block wird serverseitig
+  gerendert und braucht kein `save`; ein Kommentar in `index.js` sagt das jetzt
+  auch.
+- ~~Der `example`-Block in `src/index.js` setzt ein Attribut `values`~~ —
+  entfernt. Ein serverseitig gerenderter Block lässt sich nicht aus Attributen
+  vorschauen.
+- ~~`show_thumb()` schreibt `class="…"href="…"` ohne Leerzeichen~~ —
+  korrigiert. Das ist die **einzige** Stelle, an der die Widget-Ausgabe sich
+  gegenüber dem Stand vor dem Refactoring ändert: um genau dieses Zeichen.
 - ~~`apiVersion` 2 ist seit WordPress 6.9 veraltet~~ — in Phase 5 auf 3
   gezogen. Der Test im iframe-Editor steht noch aus, siehe dort.
-- `post_thumbnail_html()` rechnet `$width / $height` mit den Werten aus
-  `getimagesize()`. Schlägt das fehl (Datei fehlt), sind beide `null` und PHP 8
-  bricht mit `DivisionByZeroError` ab — auf PHP 5/7 gab es nur eine Warnung.
-  Seit Phase 1 bleibt in diesem Fall die Seite ohne Widget statt mit halb
-  ausgegebenem Widget, weil der Kern erst am Ende ausgibt.
+- ~~`post_thumbnail_html()` rechnet `$width / $height` mit den Werten aus
+  `getimagesize()`~~ — abgesichert: `wp_getimagesize()` statt `getimagesize()`,
+  und ohne brauchbare Maße kommt das unveränderte HTML zurück. Nachgestellt:
+  fehlt die Bilddatei, brach die alte Fassung mit `DivisionByZeroError` mitten
+  in der Seite ab, die neue rendert vollständig.
+- Ebenfalls abgesichert, gleiche Klasse von Problem: `$thumbSize['crop']` und
+  `$this->instance['thumb_w']` / `['thumb_h']` in `show_thumb()`,
+  `$post_img['file']`, sowie `include_tax` und `post_types` in `build_html()`.
+  Alle Zweige verhalten sich wie vorher, sie warnen nur nicht mehr.
+- **Offen:** Die Legacy-Widget-Transformation in `src/index.js` übernimmt nur
+  `asc_sort_order`. Jetzt, wo der Block alle Optionen kennt, wäre die
+  Umkehrung von `block_attributes_to_instance()` in JavaScript sinnvoll, damit
+  „Widget in Block umwandeln" die Einstellungen mitnimmt.
 
 ---
 
