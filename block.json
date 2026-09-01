@@ -10,22 +10,35 @@
         "html": false
     },
     "attributes": {
-        "hideTitle": {},
-        "title": {"type": "string", "default": "Same Posts"},
-        "titleLink": {},
-        "disableCSS": {},
-        "disableFontStyles": {},
-        "disableThemeStyles": {},
-        "showPostCounts": {},
-        "displayAsDropdown": {},
-        "groupBy": {"type": "string", "default": "monthly"},
-        "order": {"type": "string", "default": "desc"},
-        "orderBy": {},
-        "categorySuggestions": {},
-        "selectCategories": {},
-        "categories": {}
+        "hideTitle": {
+            "type": "boolean",
+            "default": false
+        },
+        "title": {
+            "type": "string",
+            "default": "Same Posts"
+        },
+        "titleLink": {
+            "type": "boolean",
+            "default": false
+        },
+        "disableCSS": {
+            "type": "boolean",
+            "default": false
+        },
+        "disableFontStyles": {
+            "type": "boolean",
+            "default": false
+        },
+        "disableThemeStyles": {
+            "type": "boolean",
+            "default": false
+        },
+        "order": {
+            "type": "string",
+            "default": "desc"
+        }
     },
-    "renderCallback": "samePosts\render_same_posts_block",
     "editorScript": "file:./build/index.js",
     "editorStyle": "file:./build/style-index.css",
     "style": "file:./build/style-index.css"

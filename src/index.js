@@ -45,7 +45,6 @@ registerBlockType(name, {
                 '<p class="cpwp-excerpt-text">Cake jujubes jelly beans. Marzipan soufflé gummies gummi bears oat cake chocolate jelly icing. Cotton candy croissant wafer cake apple pie juj.</p>' +
                 '</li>' +
                 '</ul>',
-            showPostCounts: true,
         },
     },
     transforms: {
