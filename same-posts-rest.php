@@ -14,7 +14,7 @@
  *
  * @package samePosts
  *
- * @since 1.2.1
+ * @since 1.3.0
  */
 
 namespace samePosts;

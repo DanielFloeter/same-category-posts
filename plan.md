@@ -6,8 +6,8 @@ anbieten — und dieselbe Ausgabe erzeugen — wie das klassische Widget
 
 Stand: 2026-09-01 · Branch `master`
 
-**Fortschritt:** Phasen 0 bis 4 sind erledigt, damit sind alle 30
-Widget-Optionen im Block. Offen ist nur noch Phase 5 (Abschluss).
+**Fortschritt:** Alle Phasen sind erledigt. Der Block bietet dieselben
+Optionen wie das Widget und beide benutzen denselben Render-Kern.
 
 Der Stand ist in der laufenden WordPress-Installation geprüft
 (`localhost/wordpress-6-3`, Beitrag 119 als Test-Entwurf): Das Widget rendert
@@ -168,10 +168,8 @@ Die ersten vier Punkte sind in Phase 0 erledigt.
   nicht gibt — die Vorschau in der Inserter-Liste bleibt daher leer.
 - `show_thumb()` schreibt `class="…"href="…"` ohne Leerzeichen zwischen den
   Attributen. Browser verzeihen das, korrekt ist es nicht.
-- WordPress meldet in der Konsole: `apiVersion` 2 ist seit 6.9 veraltet,
-  Blöcke sollen auf 3 gehen, damit der Editor im iframe läuft. Betrifft auch
-  andere TipTopPress-Blöcke der Installation. Eine Zeile in `block.json` plus
-  ein Test im iframe-Editor — Kandidat für Phase 5.
+- ~~`apiVersion` 2 ist seit WordPress 6.9 veraltet~~ — in Phase 5 auf 3
+  gezogen. Der Test im iframe-Editor steht noch aus, siehe dort.
 - `post_thumbnail_html()` rechnet `$width / $height` mit den Werten aus
   `getimagesize()`. Schlägt das fehl (Datei fehlt), sind beide `null` und PHP 8
   bricht mit `DivisionByZeroError` ab — auf PHP 5/7 gab es nur eine Warnung.
@@ -322,11 +320,31 @@ darüber; `use_css_cropping` setzt die Klasse `same-category-post-css-cropping`;
 ausgeschaltet erscheint nichts. Der Charakterisierungslauf wurde mit
 Thumbnails wiederholt — alte und neue Fassung weiter byte-gleich.
 
-### Phase 5 — Abschluss
+### Phase 5 — Abschluss — **erledigt**
 
-- Parität durchgehen: jede Option aus `form()` gegen den Block prüfen.
-- `readme.txt` und Changelog ergänzen.
-- Entscheiden, ob das Widget als deprecated markiert wird oder gleichwertig bleibt.
+- **Parität geprüft:** `Widget::form()` kennt 30 Optionsschlüssel. 28 haben
+  ihre Entsprechung im Block; die zwei anderen sind bewusst außen vor:
+  `post_types` baut `initPostTypesAndTaxes()` selbst (keine Benutzeroption)
+  und `exclude_categories` ist seit 1.0.12 durch `exclude_terms` ersetzt.
+  Umgekehrt hat der Block keine Option, die das Formular nicht hat.
+- **`readme.txt`:** Changelog-Eintrag 1.3.0, Beschreibung und Feature-Liste um
+  den Block ergänzt, zwei FAQ-Einträge (Terms im Block ausschließen; warum der
+  Block im Editor leer bleiben kann). `Requires at least` von 3.0 auf 6.3
+  gezogen — `apiVersion` 3 gibt es erst ab WordPress 6.3. `Stable tag` bleibt
+  bei 1.1.20, das gehört zum Release.
+- **Version 1.3.0** in Plugin-Header, `SAME_CATEGORY_POSTS_VERSION` und
+  `package.json`; die `@since`-Angaben der neuen Dateien mitgezogen.
+- **`apiVersion` 3** (siehe 2.5): Die Deprecation-Meldung nennt den Block
+  nicht mehr. Im iframe-Editor ließ sich der Block hier nicht prüfen, weil ein
+  anderes aktives Plugin (`tiptip/category-archives-block`) noch auf
+  `apiVersion` 2 steht und der Post-Editor deshalb weiter ohne iframe läuft.
+  Der Editor-Code greift nirgends direkt auf `document` zu und die Styles
+  kommen aus `block.json`, das Risiko ist also klein — nachzuholen bleibt es
+  trotzdem.
+- **Widget-Zukunft (Frage 1):** Das Widget bleibt gleichwertig und wird
+  **nicht** als deprecated markiert. Es wird voraussichtlich nicht
+  weiterentwickelt, weil die Unterstützung klassischer Widgets in WordPress
+  abnimmt — aber das entscheidet sich später, nicht jetzt.
 
 ---
 
@@ -343,7 +361,7 @@ Thumbnails wiederholt — alte und neue Fassung weiter byte-gleich.
 | `same-posts-rest.php` | REST-Route für Taxonomien und Terms im Editor |
 | `tests/unit/` | Unit-Suite ohne WordPress (vorhanden) |
 | `phpunit.xml.dist`, `composer.json` | Testkonfiguration (vorhanden) |
-| `readme.txt` | Changelog |
+| `readme.txt` | Changelog, Beschreibung, FAQ, `Requires at least` |
 
 ---
 
@@ -438,12 +456,14 @@ System-PHP eine andere Version ist.
 Parameter, damit das Widget weiter seine Sidebar-Args durchgibt. Eine wählbare
 Überschriftenebene kann später als Attribut nachgezogen werden.
 
-1. **Widget-Zukunft:** Bleibt das klassische Widget dauerhaft gleichwertig, oder
-   ist der Block sein Nachfolger? Das entscheidet, wie viel Aufwand die
-   Rückwärtskompatibilität von `widget()` rechtfertigt.
+1. ~~**Widget-Zukunft:**~~ entschieden: gleichwertig, keine
+   Deprecation-Markierung. Siehe Phase 5.
 2. ~~**`include_tax` / `exclude_terms` im Editor:**~~ entschieden, eigener
    Endpoint, siehe Phase 2.
 3. **`isset()` vs. `! empty()`:** Mapping-Funktion (kleiner Eingriff, Widget
    bleibt unberührt) oder die Prüfungen im Kern begradigen (sauberer, testet
    sich aber auf dem Widget mit)?
 4. ~~**`separate_categories` im Block:**~~ entschieden, siehe oben.
+
+Damit ist von den vier Ausgangsfragen nur noch die dritte offen, und sie ist
+entschärft: das Mapping steht, der Kern blieb unangetastet.

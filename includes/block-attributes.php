@@ -20,7 +20,7 @@
  * omitted from the resulting instance, never passed along as false or "".
  *
  * @package samePosts
- * @since   1.2.1
+ * @since   1.3.0
  */
 
 namespace samePosts;
