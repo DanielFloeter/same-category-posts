@@ -107,14 +107,8 @@ The list is built from the terms the post is saved with. A post that has no cate
 == Changelog ==
 
 = 1.3.0 - September 01 2026  =
-* Block: all options of the widget are now available in the block -- filter, post details and thumbnails
-* Block: live preview in the editor, on single posts, in post templates and on archive pages
-* Widget and block share one render core, so both produce the same output
-* New route GET /wp-json/same-posts/v1/taxonomies serves the editor's taxonomy and term filters
-* Block updated to block API version 3
-* Bugfix: the excerpt length filter stayed hooked after rendering and shortened other excerpts on the page
-* Bugfix: sort order in the block was always ascending
-* Unit tests for the block attribute mapping and the thumbnail cropping arithmetic
+* Block with all options of the widget and a live preview in the editor
+* Bugfix Excerpt length filter stayed active, sort order, PHP 8 warnings
 
 = 1.2.0 - Dezember 20 2021  =
 * Gutenberg Block support
