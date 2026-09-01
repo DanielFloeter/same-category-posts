@@ -6,11 +6,11 @@
     "license": "GPL-2.0-or-later",
     "main": "build/index.js",
     "scripts": {
-        "build": "wp-scripts build",
+        "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider wp-scripts build",
         "format:js": "wp-scripts format-js",
         "lint:css": "wp-scripts lint-style",
         "lint:js": "wp-scripts lint-js",
-        "start": "wp-scripts start",
+        "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider wp-scripts start",
         "packages-update": "wp-scripts packages-update"
     },
     "dependencies": {
@@ -19,6 +19,7 @@
         "@wordpress/i18n": "^3.17.0"
     },
     "devDependencies": {
-        "@wordpress/scripts": "^13.0.1"
+        "@wordpress/scripts": "^13.0.1",
+        "cross-env": "^7.0.3"
     }
 }
