@@ -151,7 +151,9 @@ Jede Phase endet mit `npm run build` + manuellem Test in WordPress
   `widget()` extrahieren (Query-Aufbau, Loop, `separate_categories`-Zweig,
   Titel-Platzhalter `%cat%` / `%cat-all%`).
 - `widget()` auf den Wrapper reduzieren.
-- `block_attributes_to_instance()` in `same-posts-block.php` anlegen (siehe 2.3).
+- `block_attributes_to_instance()` — **erledigt**, liegt in
+  `includes/block-attributes.php` samt Unit-Tests (siehe 2.3 und Abschnitt 5).
+  In `same-posts-block.php` nur noch einbinden und aufrufen.
 - `render_same_posts_block()` neu schreiben: Attribute → Instance →
   `render_html()` → `get_block_wrapper_attributes()`.
 - Post-ID-Kontext für die Editor-Vorschau (siehe 2.4).
@@ -217,11 +219,91 @@ Breite/Höhe als Zahlenfelder-Paar, nur sichtbar bei aktivem `thumb`.
 | `src/edit.js` | Panels neu aufbauen (Hauptarbeit) |
 | `same-posts-block.php` | Render-Callback neu, Attribut→Instance-Mapping |
 | `same-category-posts.php` | `render_html()` extrahieren, `widget()` als Wrapper |
+| `includes/block-attributes.php` | Attribut→Instance-Abbildung (WP-frei, vorhanden) |
+| `tests/unit/` | Unit-Suite ohne WordPress (vorhanden) |
+| `phpunit.xml.dist`, `composer.json` | Testkonfiguration (vorhanden) |
 | `readme.txt` | Changelog |
 
 ---
 
-## 5. Offene Fragen
+## 5. Tests
+
+### 5.1 Zwei getrennte Suiten
+
+| Verzeichnis | Art | Braucht | Status |
+|---|---|---|---|
+| `tests/` | WordPress-Integrationstests | WP-Test-Suite + Test-DB | veraltet, liegen vorerst |
+| `tests/unit/` | Unit-Tests ohne WordPress | nur PHP + PHPUnit | neu, lauffähig |
+
+Die bestehenden Integrationstests sind nicht mehr gültig: `test-main.php`
+instanziiert `SameCategoryPosts`, die Klasse heißt heute `samePosts\Widget`;
+`tests/bootstrap.php` verweist auf `../../../../../tests/phpunit/`, was in einer
+normalen Installation nicht existiert. Sie werden erst in Phase 1 gebraucht
+(Charakterisierungstests für die Widget-Ausgabe) und dann repariert.
+
+### 5.2 Was ohne WordPress testbar ist — und was nicht
+
+Nur Code, der keine WordPress-Funktionen aufruft. Daraus folgt eine
+Arbeitsregel für die Phasen: **reine Logik wandert nach `includes/`**, alles mit
+`get_posts()`, `get_the_date()` usw. bleibt in der Widget-Klasse und braucht die
+Integrationssuite.
+
+Der extrahierte Render-Kern `render_html()` aus Phase 1 ist damit ausdrücklich
+*kein* Kandidat für die Unit-Suite — er lebt von WP-Query und Loop.
+
+### 5.3 Vorhanden: `includes/block-attributes.php`
+
+Erste ausgelagerte Einheit, entspricht Punkt 2.3 dieses Plans:
+`samePosts\block_attributes_to_instance()` übersetzt Block-Attribute in ein
+Widget-Instance-Array. Abgedeckt von `tests/unit/BlockAttributesTest.php`
+(23 Tests, 119 Assertions):
+
+- **`false`-Booleans werden ausgelassen** — der Kern der `isset()`-Falle.
+  Der Test prüft für jedes Boolean-Attribut, dass `isset()` es hinterher als
+  „aus" meldet. Gegenprobe durchgeführt: Werden Booleans wieder durchgereicht,
+  schlagen genau dieser Test und der Vollkonfigurations-Test fehl.
+- Unbekannte Attribute (`className`, Archives-Reste, Fremdes) werden verworfen
+  und landen nicht im Instance.
+- `thumbTop` behält seinen historischen camelCase-Key — `itemHTML()` liest genau
+  diesen; ein „Aufräumen" nach `thumb_top` würde die Option still abschalten.
+- Zahlenoptionen: `0` und negative Werte entfallen (`num` = 0 bedeutet im Widget
+  ohnehin „ohne Limit"), Strings werden zu `int` gecastet, `true` wird abgewiesen.
+- `sort_by` nur aus der Whitelist `date|title|comment_count|rand`.
+- `include_tax` / `exclude_terms` werden strukturell bereinigt: leere Einträge
+  raus, Term-IDs als positive Integer, dedupliziert.
+- Die Style-Attribute des General-Panels tauchen nicht im Instance auf — sie
+  steuern das Laden von Stylesheets, nicht die Query.
+
+### 5.4 Ausführen
+
+```
+cd wp-content/plugins/same-category-posts
+composer install
+vendor/bin/phpunit
+```
+
+Ohne Composer genügt `phpunit.phar` im Plugin-Ordner: `php phpunit.phar`.
+Die Konfiguration liegt in `phpunit.xml.dist` und umfasst nur `tests/unit`;
+die Integrationssuite behält ihre eigene `tests/phpunit.xml`.
+
+XAMPP-PHP liegt unter `/Applications/XAMPP/xamppfiles/bin/php`, falls das
+System-PHP eine andere Version ist.
+
+### 5.5 Kandidaten für die weiteren Phasen
+
+- `same_category_posts_get_image_size()` ist bereits eine reine Funktion
+  (Seitenverhältnis-Berechnung fürs CSS-Cropping) und ohne WordPress testbar,
+  sobald sie aus `same-category-posts.php` in `includes/` gezogen ist — relevant
+  für Phase 4.
+- Die Datumsformat-Auswahl aus `itemHTML()` (`date_format` vs.
+  `use_wp_date_format` vs. Default `j M Y`) ist reine Verzweigungslogik — Phase 3.
+- Die Titel-Platzhalter `%cat%` / `%cat-all%` lassen sich als String-Ersetzung
+  isolieren, wenn das Zusammenbauen der Kategorie-Links davon getrennt wird —
+  Phase 1.
+
+---
+
+## 6. Offene Fragen
 
 1. **Widget-Zukunft:** Bleibt das klassische Widget dauerhaft gleichwertig, oder
    ist der Block sein Nachfolger? Das entscheidet, wie viel Aufwand die

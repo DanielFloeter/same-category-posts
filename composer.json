@@ -1,0 +1,15 @@
+{
+    "name": "kometschuh/same-category-posts",
+    "description": "Show posts related to the current category or other custom post types.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}
