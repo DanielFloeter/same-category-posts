@@ -67,6 +67,15 @@ export default function Edit( { attributes, setAttributes } ) {
 		excludeStickyPosts,
 		excludeChildren,
 		excludeNoChildren,
+		excerpt,
+		excerptLength,
+		excerptMoreText,
+		commentNum,
+		date,
+		useWpDateFormat,
+		dateFormat,
+		dateLink,
+		author,
 		disableCSS,
 		disableFontStyles,
 		disableThemeStyles,
@@ -213,6 +222,106 @@ export default function Edit( { attributes, setAttributes } ) {
 								excludeNoChildren: ! excludeNoChildren,
 							} )
 						}
+					/>
+				</PanelBody>
+				<PanelBody title={ __( 'Post details', 'same-posts' ) }>
+					<ToggleControl
+						label={ __( 'Show post excerpt', 'same-posts' ) }
+						checked={ !! excerpt }
+						onChange={ () => setAttributes( { excerpt: ! excerpt } ) }
+					/>
+					{ excerpt && (
+						<>
+							<TextControl
+								label={ __(
+									'Excerpt length (in words)',
+									'same-posts'
+								) }
+								help={ __(
+									"0 keeps WordPress's own length.",
+									'same-posts'
+								) }
+								type="number"
+								min="0"
+								value={ excerptLength }
+								onChange={ ( value ) =>
+									setAttributes( {
+										excerptLength: toCount( value ),
+									} )
+								}
+							/>
+							<TextControl
+								label={ __(
+									"Excerpt 'more' text",
+									'same-posts'
+								) }
+								placeholder={ __( '... more', 'same-posts' ) }
+								value={ excerptMoreText }
+								onChange={ ( value ) =>
+									setAttributes( { excerptMoreText: value } )
+								}
+							/>
+						</>
+					) }
+					<ToggleControl
+						label={ __( 'Show number of comments', 'same-posts' ) }
+						checked={ !! commentNum }
+						onChange={ () =>
+							setAttributes( { commentNum: ! commentNum } )
+						}
+					/>
+					<ToggleControl
+						label={ __( 'Show post date', 'same-posts' ) }
+						checked={ !! date }
+						onChange={ () => setAttributes( { date: ! date } ) }
+					/>
+					{ date && (
+						<>
+							<ToggleControl
+								label={ __(
+									'Use the WordPress Settings > General for the date format',
+									'same-posts'
+								) }
+								checked={ !! useWpDateFormat }
+								onChange={ () =>
+									// An own format wins over this setting in
+									// itemHTML(), so clear it when switching
+									// over -- otherwise the toggle would look
+									// active without doing anything.
+									setAttributes( {
+										useWpDateFormat: ! useWpDateFormat,
+										dateFormat: useWpDateFormat
+											? dateFormat
+											: '',
+									} )
+								}
+							/>
+							{ ! useWpDateFormat && (
+								<TextControl
+									label={ __( 'Date format', 'same-posts' ) }
+									placeholder="j M Y"
+									value={ dateFormat }
+									onChange={ ( value ) =>
+										setAttributes( { dateFormat: value } )
+									}
+								/>
+							) }
+							<ToggleControl
+								label={ __(
+									'Make widget date link',
+									'same-posts'
+								) }
+								checked={ !! dateLink }
+								onChange={ () =>
+									setAttributes( { dateLink: ! dateLink } )
+								}
+							/>
+						</>
+					) }
+					<ToggleControl
+						label={ __( 'Show post author', 'same-posts' ) }
+						checked={ !! author }
+						onChange={ () => setAttributes( { author: ! author } ) }
 					/>
 				</PanelBody>
 				<PanelBody title={ __( 'General', 'same-posts' ) }>

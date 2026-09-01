@@ -7,8 +7,9 @@ anbieten — und dieselbe Ausgabe erzeugen — wie das klassische Widget
 Stand: 2026-09-01 · Branch `master`
 
 **Fortschritt:** Phase 0 (Aufräumen), Phase 1 (gemeinsamer Render-Kern) und
-die einfachen Controls aus Phase 2 sind erledigt. Als nächstes Phase 2b
-(`include_tax` / `exclude_terms`) oder Phase 3 (Panel „Post details").
+die einfachen Controls aus Phase 2 sind erledigt, ebenso Phase 3 (Panel
+„Post details"). Offen: Phase 2b (`include_tax` / `exclude_terms`), Phase 4
+(Thumbnails) und Phase 5 (Abschluss).
 
 ---
 
@@ -256,16 +257,25 @@ Ein Hinweis zu `excludeNoChildren`: Die Option wirkt nur auf ausgeschlossene
 Terms, also erst mit Phase 2b. Sie ist trotzdem schon im Panel, mit
 entsprechendem Hilfetext.
 
-### Phase 3 — Panel „Post details"
+### Phase 3 — Panel „Post details" — **erledigt**
 
 `excerpt`, `excerpt_length`, `excerpt_more_text`, `comment_num`, `date`,
 `use_wp_date_format`, `date_format`, `date_link`, `author`.
 
-Abhängigkeiten wie im Widget nachbilden: `excerpt_length` / `excerpt_more_text`
-nur bei aktivem `excerpt`; `date_format` nur wenn `use_wp_date_format` aus ist.
+Abhängigkeiten wie im Widget nachgebildet: `excerpt_length` /
+`excerpt_more_text` nur bei aktivem `excerpt`; `use_wp_date_format`,
+`date_format` und `date_link` nur bei aktivem `date`; `date_format` zusätzlich
+nur, wenn `use_wp_date_format` aus ist.
 
-Bedient wird ausschließlich `itemHTML()` — sobald Phase 1 steht, ist das reine
-UI-Arbeit plus Mapping.
+Eine bewusste Abweichung vom Widget: `itemHTML()` prüft `date_format` **vor**
+`use_wp_date_format`, ein eingetragenes Format gewinnt also. Im Widget bleibt
+das Feld beim Umschalten befüllt und der Schalter wirkungslos; im Block wird
+`dateFormat` beim Einschalten von `useWpDateFormat` geleert. Der Render-Kern
+bleibt unangetastet, nur der Instance ist ein anderer.
+
+**Geprüft:** alle neun Optionen gegen die Attrappen, einzeln und ausgeschaltet
+— Datum mit WP-Format, mit eigenem Format und als Link, Excerpt mit und ohne
+Länge/Weiterlesen-Text, Kommentarzahl, Autor.
 
 ### Phase 4 — Panel „Thumbnails"
 

@@ -69,6 +69,42 @@
         "excludeNoChildren": {
             "type": "boolean",
             "default": false
+        },
+        "excerpt": {
+            "type": "boolean",
+            "default": false
+        },
+        "excerptLength": {
+            "type": "number",
+            "default": 0
+        },
+        "excerptMoreText": {
+            "type": "string",
+            "default": ""
+        },
+        "commentNum": {
+            "type": "boolean",
+            "default": false
+        },
+        "date": {
+            "type": "boolean",
+            "default": false
+        },
+        "useWpDateFormat": {
+            "type": "boolean",
+            "default": false
+        },
+        "dateFormat": {
+            "type": "string",
+            "default": ""
+        },
+        "dateLink": {
+            "type": "boolean",
+            "default": false
+        },
+        "author": {
+            "type": "boolean",
+            "default": false
         }
     },
     "usesContext": [ "postId" ],
