@@ -460,7 +460,37 @@ System-PHP eine andere Version ist.
 
 ---
 
-## 6. Offene Fragen
+## 6. Release 1.3.0
+
+Vorbereitet:
+
+- `Stable tag` auf 1.3.0 gezogen, `Requires PHP: 7.2` ergänzt (entspricht
+  `composer.json`), `Requires at least: 6.3` wegen `apiVersion` 3.
+- Plugin-Header: `Description` sagt jetzt, was das Plugin tut („as a widget and
+  as a block") statt „Adds a widget that shows the most recent posts from a
+  single category"; `Requires at least` und `Requires PHP` mit aufgenommen.
+
+**Muss vor dem Release entschieden werden:**
+
+1. **`build/` steht in `.gitignore`.** Ein aus dem Repository gebauter
+   Plugin-Ordner enthält also `build/index.js` nicht — und ohne die Datei
+   registriert sich der Block nicht. Genau diesen Fehler zeigt ein
+   Schwester-Plugin in der Testinstallation an („the block assets are
+   missing"). Entweder `build/` mitversionieren oder einen Release-Schritt
+   (GitHub Action / lokales Skript) einführen, der `npm ci && npm run build`
+   ausführt und das Ergebnis ins wp.org-SVN legt.
+2. **Screenshots.** Die vier vorhandenen zeigen englische Widget-Oberflächen.
+   Ein fünftes für die Block-Seitenleiste fehlt. Die Aufnahme muss aus einer
+   englischen Installation kommen — in der deutschen Testinstallation kommen
+   Post-Type- und Taxonomie-Labels aus WordPress und wären gemischt.
+3. **Text Domain.** Der Header deklariert keine, der Code benutzt drei
+   Varianten: `'same-posts'` (im Block durchgehend), gar keine Domain (29
+   Stellen in `same-category-posts.php`, die damit gegen die WordPress-eigene
+   Domain übersetzt werden) und `'same-posts'` in drei PHP-Strings. Für
+   wp.org-Sprachpakete müsste die Domain dem Slug `same-category-posts`
+   entsprechen. Das ist ein eigener Durchgang, keine Zeile.
+
+## 7. Offene Fragen
 
 **Erledigt (Phase 1):** Frage 4 ist entschieden — der Block bringt mit
 `samePosts\BLOCK_BEFORE_TITLE` / `BLOCK_AFTER_TITLE` ein festes
