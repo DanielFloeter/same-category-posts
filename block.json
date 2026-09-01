@@ -34,11 +34,12 @@
             "type": "boolean",
             "default": false
         },
-        "order": {
-            "type": "string",
-            "default": "desc"
+        "ascSortOrder": {
+            "type": "boolean",
+            "default": false
         }
     },
+    "usesContext": [ "postId" ],
     "editorScript": "file:./build/index.js",
     "editorStyle": "file:./build/style-index.css",
     "style": "file:./build/style-index.css"

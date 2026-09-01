@@ -417,9 +417,6 @@ class Widget extends \WP_Widget {
 			return;
 		}
 
-		global $wp_query;
-		global $post;
-		$post_old = $post; // Save the post object.
 		if ( is_archive() ) {
 			// if archive page
 			$current_post_id = 0;
@@ -427,7 +424,88 @@ class Widget extends \WP_Widget {
 			$current_post_id = get_the_ID();
 		}
 
-		extract( $args );
+		$args = wp_parse_args(
+			$args,
+			array(
+				'before_widget' => '',
+				'after_widget'  => '',
+				'before_title'  => '',
+				'after_title'   => '',
+			)
+		);
+
+		$html = $this->render_html( $instance, $current_post_id, $args['before_title'], $args['after_title'] );
+
+		if ( '' === $html ) {
+			return;
+		}
+
+		echo $args['before_widget'] . $html . $args['after_widget'];
+	}
+
+	/**
+	 * Build the widget's HTML and return it.
+	 *
+	 * The classic widget calls this from widget() and wraps the result in the
+	 * sidebar's before/after args; the block's render callback calls it with its
+	 * own title wrapper. Both therefore share one implementation.
+	 *
+	 * Unlike widget() this does not depend on a running loop: when a post id is
+	 * given the global $post is set from it, so the taxonomy lookups work in the
+	 * block editor's preview request as well. The global is restored on the way
+	 * out.
+	 *
+	 * @param  array           $instance        The widget options.
+	 * @param  int             $current_post_id Id of the post being displayed, 0 on archive pages.
+	 * @param  string          $before_title    Markup opening the title, e.g. '<h2 class="widget-title">'.
+	 * @param  string          $after_title     Markup closing the title.
+	 * @return string                           The HTML, or an empty string when there is nothing to show.
+	 *
+	 * @since 1.2.1
+	 */
+	function render_html( $instance, $current_post_id, $before_title = '', $after_title = '' ) {
+		global $post;
+
+		$post_old = $post; // Save the post object.
+
+		if ( $current_post_id && ( ! $post || (int) $post->ID !== (int) $current_post_id ) ) {
+			$post = get_post( $current_post_id );
+		}
+
+		$html = $post ? $this->build_html( $instance, $current_post_id, $before_title, $after_title ) : '';
+
+		// Both filters have to go, whichever way build_html() left the method:
+		// the excerpt length filter is added with priority 9999 and has to be
+		// removed with the same priority.
+		remove_filter( 'excerpt_length', array( $this, 'excerpt_length_filter' ), 9999 );
+		remove_filter( 'excerpt_more', array( $this, 'excerpt_more_filter' ) );
+
+		$post = $post_old; // Restore the post object.
+
+		return $html;
+	}
+
+	/**
+	 * The body of render_html(): query the posts and build the list.
+	 *
+	 * Kept separate so that render_html() can restore the global post object and
+	 * unhook the excerpt filters on every path, including the early exits here.
+	 * Expects the global $post to be the post whose terms are the basis of the
+	 * query. Do not call directly.
+	 *
+	 * @param  array  $instance        The widget options.
+	 * @param  int    $current_post_id Id of the post being displayed, 0 on archive pages.
+	 * @param  string $before_title    Markup opening the title.
+	 * @param  string $after_title     Markup closing the title.
+	 * @return string                  The HTML, or an empty string when there is nothing to show.
+	 *
+	 * @since 1.2.1
+	 */
+	protected function build_html( $instance, $current_post_id, $before_title, $after_title ) {
+		global $post;
+
+		$html = '';
+
 		$this->instance = $instance;
 
 		$this->initPostTypesAndTaxes($instance);
@@ -494,7 +572,7 @@ class Widget extends \WP_Widget {
 		
 		// If the current post has no terms for the selected taxonomy, don't render the widget.
 		if ( empty( $categories ) || is_wp_error( $categories ) ) {
-    	return;
+    	return '';
 		}
 
 		// Excerpt length filter
@@ -556,7 +634,7 @@ class Widget extends \WP_Widget {
 						'operator' => 'IN',
 						);
 				} else {
-					return;
+					return '';
 				}
 
 				// excluded terms
@@ -596,8 +674,6 @@ class Widget extends \WP_Widget {
 
 		if( $my_query->have_posts() )
 		{
-			echo $before_widget;
-
 			// Widget title
 			if( !isset ( $instance["hide_title"] ) ) {
 				if( isset( $instance["separate_categories"] ) && $instance["separate_categories"] ) { 
@@ -622,7 +698,7 @@ class Widget extends \WP_Widget {
 					}
 				} else {
 					// ! Separate categories: echo
-					echo $before_title;
+					$html .= $before_title;
 					if( isset ( $instance["title_link"] ) ) {
 						$linkList = "";
 						foreach($categories as $cat) {
@@ -641,7 +717,7 @@ class Widget extends \WP_Widget {
 							} else 															// no category placeholder is used
 								$linkList = '<a href="' . get_category_link( $categories[0] ) . '">'. $instance['title'] . '</a>';
 						}
-						echo wp_kses_post(apply_filters('widget_title',$linkList));
+						$html .= wp_kses_post(apply_filters('widget_title',$linkList));
 					} else {
 						$categoryNames = "";
 						if ($categories) {
@@ -667,15 +743,15 @@ class Widget extends \WP_Widget {
 							else
 								$categoryNames = $instance['title'];
 						}
-						echo wp_kses_post(apply_filters('widget_title',$categoryNames));
+						$html .= wp_kses_post(apply_filters('widget_title',$categoryNames));
 					}
-					echo $after_title;
+					$html .= $after_title;
 				}
 			}
 			// /Widget title
 			
 			// Post list
-			echo "<ul>\n";
+			$html .= "<ul>\n";
 			while ($my_query->have_posts())
 			{
 				$my_query->the_post();
@@ -699,7 +775,7 @@ class Widget extends \WP_Widget {
 					}
 				} else {
 					// ! Separate categories: get itemHTML and echo
-					echo $this->itemHTML($instance,$current_post_id);
+					$html .= $this->itemHTML($instance,$current_post_id);
 				}
 			} // end while
 
@@ -726,20 +802,16 @@ class Widget extends \WP_Widget {
 						}
 					}
 				if ($haveItemHTML)
-					echo $ret;
+					$html .= $ret;
 				}
 			}
 
-			echo "</ul>\n";
+			$html .= "</ul>\n";
 			// end Post list
 			
-			echo $after_widget;
 		}
 
-		remove_filter( 'excerpt_length',  array( $this,'excerpt_length_filter' ) );
-		remove_filter('excerpt_more', array($this,'excerpt_more_filter'));
-
-		$post = $post_old; // Restore the post object.
+		return $html;
 	}
 
 	/**

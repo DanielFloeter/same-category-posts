@@ -60,8 +60,7 @@ registerBlockType(name, {
             },
             transform: ({ instance }) => {
                 return createBlock('tiptip/same-posts-block', {
-                    instance,
-                    order: instance.raw.asc_sort_order ? 'asc' : 'desc',
+                    ascSortOrder: !!instance.raw.asc_sort_order,
                 });
             },
 

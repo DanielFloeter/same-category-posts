@@ -6,13 +6,16 @@ anbieten — und dieselbe Ausgabe erzeugen — wie das klassische Widget
 
 Stand: 2026-09-01 · Branch `master`
 
+**Fortschritt:** Phase 0 (Aufräumen) und Phase 1 (gemeinsamer Render-Kern)
+sind erledigt. Als nächstes Phase 2 (Panel „Filter").
+
 ---
 
 ## 1. Ausgangslage
 
-### 1.1 Was der Block heute hat
+### 1.1 Was der Block hatte (Stand vor Phase 0)
 
-`src/edit.js` rendert vier Panels:
+`src/edit.js` rendert(e) vier Panels:
 
 | Panel | Controls | Bewertung |
 |---|---|---|
@@ -23,6 +26,10 @@ Stand: 2026-09-01 · Branch `master`
 | Footer | *(leer)* | — |
 
 Es gibt kein Thumbnails-Panel.
+
+Nach Phase 0 sind davon nur das Title-Panel und ein korrekt verdrahtetes
+General-Panel übrig; die leeren Panels sind entfernt und kommen in den Phasen
+2 bis 4 mit Inhalt zurück.
 
 ### 1.2 Fehlende Optionen gegenüber `Widget::form()`
 
@@ -56,9 +63,10 @@ Es gibt kein Thumbnails-Panel.
 
 ---
 
-## 2. Blocker: Die Optionen würden noch nichts bewirken
+## 2. Blocker: Die Optionen würden noch nichts bewirken — **erledigt**
 
-Bevor Controls ergänzt werden, muss die PHP-Seite tragfähig sein. Vier Punkte:
+Bevor Controls ergänzt werden, muss die PHP-Seite tragfähig sein. Vier Punkte,
+alle in Phase 1 abgearbeitet:
 
 ### 2.1 `render_same_posts_block()` ist ein Archives-Torso
 
@@ -71,7 +79,8 @@ für den gerade globalen `$post`, keine Liste, kein Titel, kein `<ul>`.
 Der halbe Rest der Funktion ist auskommentiert und referenziert eine Methode
 `get_elements_HTML()`, die es in der Klasse nicht gibt.
 
-→ Muss ersetzt werden, nicht erweitert.
+→ Muss ersetzt werden, nicht erweitert. **Erledigt:** neu geschrieben, ruft
+`Widget::render_html()` und setzt `get_block_wrapper_attributes()`.
 
 ### 2.2 `Widget::widget()` gibt aus, statt zurückzugeben
 
@@ -84,6 +93,12 @@ extrahieren, die einen String liefert. `widget()` wird zu einem dünnen Wrapper
 (`echo $before_widget . $this->render_html(...) . $after_widget`), der
 Block-Render-Callback nutzt dieselbe Methode. Ohne diesen Schritt entsteht
 zwangsläufig doppelte, auseinanderdriftende Logik.
+
+**Erledigt:** `render_html( $instance, $current_post_id, $before_title,
+$after_title )` liefert den String, `build_html()` trägt den ausgelagerten
+Rumpf und darf frei früh aussteigen, `render_html()` stellt danach immer den
+globalen `$post` wieder her und hängt die Excerpt-Filter ab. `widget()` ist
+der Wrapper und übergibt seine Sidebar-Args als Titel-Klammer.
 
 ### 2.3 `isset()`-Semantik: `false` ist nicht „aus"
 
@@ -100,6 +115,9 @@ die camelCase→snake_case übersetzt und leere/false-Werte auslässt. Alternati
 alle `isset()`-Prüfungen auf `! empty()` umstellen — sauberer, aber ein
 größerer Eingriff mit Regressionsrisiko fürs Widget.
 
+**Erledigt:** die Mapping-Funktion wird jetzt vom Render-Callback benutzt; die
+`isset()`-Prüfungen im Kern bleiben unangetastet.
+
 ### 2.4 Editor-Vorschau hat keinen Post-Kontext
 
 `widget()` steigt sofort aus, wenn nicht `is_single()` oder `is_archive()`.
@@ -111,7 +129,16 @@ Editor (`useSelect` auf `core/editor` → `getCurrentPostId()`) als Attribut
 mitschicken, und in `render_html()` die ID als Parameter akzeptieren statt sie
 aus dem Loop zu ziehen.
 
+**Erledigt:** `usesContext: [ "postId" ]` steht in `block.json`, und
+`samePosts\current_post_id()` bedient die drei Fälle Archivseite (0),
+Post-Template (`$block->context['postId']`) und Einzelseite bzw.
+Editor-Vorschau (`get_the_ID()`). Der Editor braucht kein eigenes Attribut:
+`ServerSideRender` schickt `post_id` mit, und die Block-Renderer-Route richtet
+daraus den globalen `$post` ein.
+
 ### 2.5 Kleinkram
+
+Die ersten vier Punkte sind in Phase 0 erledigt.
 
 - `block.json`: die meisten Attribute haben weder `type` noch `default`
   (`"hideTitle": {}`). WordPress kann sie so nicht serialisieren/validieren.
@@ -124,6 +151,16 @@ aus dem Loop zu ziehen.
 - `post_thumbnail_html()` liest `$this->instance['default_thunmbnail']` (Typo
   im Original) — Key existiert in `form()` nicht. Beim Refactoring stehen
   lassen oder bewusst mitziehen, nicht stillschweigend umbenennen.
+  Steht noch (Phase 4).
+- Noch offen, in Phase 1 nur festgehalten: `build_html()` liest auf
+  Archivseiten `get_post_type($term->slag)` — `slag` statt `slug`, also immer
+  `null`. Praktisch harmlos, weil `get_post_type(null)` auf den globalen Post
+  zurückfällt; beim Aufräumen bewusst entscheiden, nicht nebenbei ändern.
+- `src/save.js` ist toter Code (in `index.js` auskommentiert) und
+  destrukturiert die in Phase 0 entfernten Attribute. Der Block wird
+  serverseitig gerendert, braucht also kein `save`. Löschen oder behalten?
+- Der `example`-Block in `src/index.js` setzt ein Attribut `values`, das es
+  nicht gibt — die Vorschau in der Inserter-Liste bleibt daher leer.
 
 ---
 
@@ -132,7 +169,7 @@ aus dem Loop zu ziehen.
 Jede Phase endet mit `npm run build` + manuellem Test in WordPress
 (Widget-Ausgabe unverändert, Block-Ausgabe wie erwartet) und einem eigenen Commit.
 
-### Phase 0 — Aufräumen (kein Funktionszuwachs)
+### Phase 0 — Aufräumen (kein Funktionszuwachs) — **erledigt**
 
 - Archives-Reste aus `src/edit.js` entfernen: `groupBy`, `displayAsDropdown`,
   `showPostCounts`, `QueryControls`.
@@ -145,7 +182,7 @@ Jede Phase endet mit `npm run build` + manuellem Test in WordPress
 
 **Prüfen:** Block lässt sich einfügen, Editor-Konsole ohne Fehler, Widget unberührt.
 
-### Phase 1 — Gemeinsamer Render-Kern (PHP)
+### Phase 1 — Gemeinsamer Render-Kern (PHP) — **erledigt**
 
 - `Widget::render_html( array $instance, $current_post_id ): string` aus
   `widget()` extrahieren (Query-Aufbau, Loop, `separate_categories`-Zweig,
@@ -158,9 +195,23 @@ Jede Phase endet mit `npm run build` + manuellem Test in WordPress
   `render_html()` → `get_block_wrapper_attributes()`.
 - Post-ID-Kontext für die Editor-Vorschau (siehe 2.4).
 
-**Prüfen:** Widget-Ausgabe byte-gleich zu vorher (Seitenquelltext vergleichen);
-Block zeigt mit den drei Title-Optionen bereits eine echte Liste, im Editor wie
-im Frontend.
+**Geprüft:** Die Widget-Ausgabe ist byte-gleich zu vorher. Nachgewiesen mit
+einem Charakterisierungslauf gegen WordPress-Attrappen (46 Fälle: 23
+Optionskombinationen × Einzel- und Archivseite) — alte und neue Fassung liefern
+identisches HTML. Der Block liefert in allen fünf Kontexten (Einzelseite,
+Archiv, Editor-Vorschau, Post-Template, kein Post) das erwartete Ergebnis.
+
+Zwei Verhaltenskorrekturen sind dabei bewusst mitgegangen:
+
+- `remove_filter( 'excerpt_length', … )` wurde ohne Priorität aufgerufen,
+  `add_filter` aber mit `9999` — der Filter blieb also für den Rest des
+  Requests hängen und hat auch fremde Excerpts gekürzt. Jetzt mit `9999`
+  entfernt.
+- Der globale `$post` wird auf allen Wegen wiederhergestellt, auch bei den
+  frühen Ausstiegen.
+
+Der Test in WordPress selbst (Widget in der Sidebar, Block im Editor) steht
+noch aus.
 
 ### Phase 2 — Panel „Filter"
 
@@ -218,7 +269,7 @@ Breite/Höhe als Zahlenfelder-Paar, nur sichtbar bei aktivem `thumb`.
 | `block.json` | Attribute mit `type`/`default`, tote Attribute raus, `usesContext` |
 | `src/edit.js` | Panels neu aufbauen (Hauptarbeit) |
 | `same-posts-block.php` | Render-Callback neu, Attribut→Instance-Mapping |
-| `same-category-posts.php` | `render_html()` extrahieren, `widget()` als Wrapper |
+| `same-category-posts.php` | `render_html()` + `build_html()` extrahiert, `widget()` ist Wrapper |
 | `includes/block-attributes.php` | Attribut→Instance-Abbildung (WP-frei, vorhanden) |
 | `tests/unit/` | Unit-Suite ohne WordPress (vorhanden) |
 | `phpunit.xml.dist`, `composer.json` | Testkonfiguration (vorhanden) |
@@ -305,6 +356,12 @@ System-PHP eine andere Version ist.
 
 ## 6. Offene Fragen
 
+**Erledigt (Phase 1):** Frage 4 ist entschieden — der Block bringt mit
+`samePosts\BLOCK_BEFORE_TITLE` / `BLOCK_AFTER_TITLE` ein festes
+`<h2 class="widget-title">` mit. `render_html()` nimmt die Titel-Klammer als
+Parameter, damit das Widget weiter seine Sidebar-Args durchgibt. Eine wählbare
+Überschriftenebene kann später als Attribut nachgezogen werden.
+
 1. **Widget-Zukunft:** Bleibt das klassische Widget dauerhaft gleichwertig, oder
    ist der Block sein Nachfolger? Das entscheidet, wie viel Aufwand die
    Rückwärtskompatibilität von `widget()` rechtfertigt.
@@ -313,6 +370,4 @@ System-PHP eine andere Version ist.
 3. **`isset()` vs. `! empty()`:** Mapping-Funktion (kleiner Eingriff, Widget
    bleibt unberührt) oder die Prüfungen im Kern begradigen (sauberer, testet
    sich aber auf dem Widget mit)?
-4. **`separate_categories` im Block:** Der Zweig erzeugt mehrere Titel-Blöcke
-   mit `$before_title` / `$after_title` — im Block gibt es diese Widget-Args
-   nicht. Ersatz festlegen (z. B. feste `<h*>`-Ebene als Attribut).
+4. ~~**`separate_categories` im Block:**~~ entschieden, siehe oben.
