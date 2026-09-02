@@ -25,13 +25,18 @@ require_once __DIR__ . '/same-posts-rest.php';
 /**
  * Register our styles
  *
+ * Hooked to `enqueue_block_assets`. `enqueue_block_assets`
+ * loads on both the front end and the editor, so the CSS -- including the
+ * "same-category-post-css-cropping" cropping rules -- is available in both
+ * places.
+ *
  * @return void
  */
 function same_category_posts_styles() {
 	wp_register_style( 'same-category-posts', plugins_url( 'same-category-posts/same-category-posts.css' ) );
 	wp_enqueue_style( 'same-category-posts' );
 }
-add_action( 'wp_enqueue_scripts', __NAMESPACE__.'\same_category_posts_styles' );
+add_action( 'enqueue_block_assets', __NAMESPACE__.'\same_category_posts_styles' );
 
 /**
  * Register our admin scripts
@@ -158,9 +163,9 @@ class Widget extends \WP_Widget {
 			return $html; // bail out if no full dimensions defined
 		}
 
-		$meta = image_get_intermediate_size($post_thumbnail_id,$size);
+		$meta = image_get_intermediate_size($post_thumbnail_id);
 
-		$post_img = wp_get_attachment_metadata($post_thumbnail_id, $size);
+		$post_img = wp_get_attachment_metadata($post_thumbnail_id);
 
 		if ( empty( $post_img['file'] ) ) {
 			return $html; // No metadata to find the file with.
@@ -903,7 +908,7 @@ class Widget extends \WP_Widget {
 		$thumbTop             = $instance['thumbTop'];
 		$thumb_w              = $instance['thumb_w'];
 		$thumb_h              = $instance['thumb_h'];
-		$use_css_cropping     = $instance['use_css_cropping'];		
+		$use_css_cropping     = $instance['use_css_cropping'];
 		
 		?>
 		<div class="same-category-widget-cont">
