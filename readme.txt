@@ -5,7 +5,7 @@ Tags: related posts, related, custom post type, products, events
 Requires at least: 6.3
 Tested up to: 6.9
 Requires PHP: 7.2
-Stable tag: 1.3.0
+Stable tag: 1.2.0
 License: GPLv2 or later 
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,7 +41,6 @@ We're [Tip Top Press](http://tiptoppress.com/) and create widgets for Wordpress.
 * Option to show the post excerpt and how long (in words).
 * Option change excerpt 'more' text.
 * Option to show the post date, author and comment count.
-* Multiple widgets.
 * Block with the same options as the widget, with a live preview in the editor.
 
 = Placeholder =
@@ -106,12 +105,9 @@ The list is built from the terms the post is saved with. A post that has no cate
 
 == Changelog ==
 
-= 1.3.0 - September 01 2026  =
-* Block with all options of the widget and a live preview in the editor
-* Bugfix Excerpt length filter stayed active, sort order, PHP 8 warnings
-
-= 1.2.0 - Dezember 20 2021  =
+= 1.2.0 - September 02 2026  =
 * Gutenberg Block support
+* Bugfix Excerpt length filter stayed active, sort order, PHP 8 warnings
 
 = 1.1.20 - Jan 01 2026  =
 * Security scan by Wordfence

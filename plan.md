@@ -338,12 +338,12 @@ Thumbnails wiederholt — alte und neue Fassung weiter byte-gleich.
   `post_types` baut `initPostTypesAndTaxes()` selbst (keine Benutzeroption)
   und `exclude_categories` ist seit 1.0.12 durch `exclude_terms` ersetzt.
   Umgekehrt hat der Block keine Option, die das Formular nicht hat.
-- **`readme.txt`:** Changelog-Eintrag 1.3.0, Beschreibung und Feature-Liste um
+- **`readme.txt`:** Changelog-Eintrag 1.2.0, Beschreibung und Feature-Liste um
   den Block ergänzt, zwei FAQ-Einträge (Terms im Block ausschließen; warum der
   Block im Editor leer bleiben kann). `Requires at least` von 3.0 auf 6.3
   gezogen — `apiVersion` 3 gibt es erst ab WordPress 6.3. `Stable tag` bleibt
   bei 1.1.20, das gehört zum Release.
-- **Version 1.3.0** in Plugin-Header, `SAME_CATEGORY_POSTS_VERSION` und
+- **Version 1.2.0** in Plugin-Header, `SAME_CATEGORY_POSTS_VERSION` und
   `package.json`; die `@since`-Angaben der neuen Dateien mitgezogen.
 - **`apiVersion` 3** (siehe 2.5): Die Deprecation-Meldung nennt den Block
   nicht mehr. Im iframe-Editor ließ sich der Block hier nicht prüfen, weil ein
@@ -459,11 +459,11 @@ System-PHP eine andere Version ist.
 
 ---
 
-## 6. Release 1.3.0
+## 6. Release 1.2.0
 
 Vorbereitet:
 
-- `Stable tag` auf 1.3.0 gezogen, `Requires PHP: 7.2` ergänzt (entspricht
+- `Stable tag` auf 1.2.0 gezogen, `Requires PHP: 7.2` ergänzt (entspricht
   `composer.json`), `Requires at least: 6.3` wegen `apiVersion` 3.
 - Plugin-Header: `Description` sagt jetzt, was das Plugin tut („as a widget and
   as a block") statt „Adds a widget that shows the most recent posts from a
