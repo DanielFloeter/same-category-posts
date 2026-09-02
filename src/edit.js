@@ -87,14 +87,9 @@ export default function Edit( { attributes, setAttributes } ) {
 		thumbW,
 		thumbH,
 		useCssCropping,
-		disableCSS,
-		disableFontStyles,
-		disableThemeStyles,
 	} = attributes;
 
-	const blockProps = useBlockProps( {
-		className: disableThemeStyles ? 'widget-title' : '',
-	} );
+	const blockProps = useBlockProps();
 
 	// Post types with their taxonomies and terms, grouped the same way the
 	// widget's form groups them. See same-posts-rest.php.
@@ -163,7 +158,7 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Title', 'same-posts' ) }>
+				<PanelBody title={ __( 'Title', 'same-posts' ) } initialOpen={false}>
 					<ToggleControl
 						label={ __( 'Hide title', 'same-posts' ) }
 						checked={ !! hideTitle }
@@ -190,7 +185,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						}
 					/>
 				</PanelBody>
-				<PanelBody title={ __( 'Filter', 'same-posts' ) }>
+				<PanelBody title={ __( 'Filter', 'same-posts' ) } initialOpen={false}>
 					{ taxonomyGroups.map( ( group ) => {
 						const chosen = chosenTaxonomy( group );
 						const taxonomy =
@@ -386,7 +381,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						}
 					/>
 				</PanelBody>
-				<PanelBody title={ __( 'Thumbnails', 'same-posts' ) }>
+				<PanelBody title={ __( 'Thumbnails', 'same-posts' ) } initialOpen={false}>
 					<ToggleControl
 						label={ __( 'Show post thumbnail', 'same-posts' ) }
 						checked={ !! thumb }
@@ -449,7 +444,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						</>
 					) }
 				</PanelBody>
-				<PanelBody title={ __( 'Post details', 'same-posts' ) }>
+				<PanelBody title={ __( 'Post details', 'same-posts' ) } initialOpen={false}>
 					<ToggleControl
 						label={ __( 'Show post excerpt', 'same-posts' ) }
 						checked={ !! excerpt }
@@ -547,33 +542,6 @@ export default function Edit( { attributes, setAttributes } ) {
 						label={ __( 'Show post author', 'same-posts' ) }
 						checked={ !! author }
 						onChange={ () => setAttributes( { author: ! author } ) }
-					/>
-				</PanelBody>
-				<PanelBody title={ __( 'General', 'same-posts' ) }>
-					<ToggleControl
-						label={ __( 'Disable the built-in CSS', 'same-posts' ) }
-						checked={ !! disableCSS }
-						onChange={ () =>
-							setAttributes( { disableCSS: ! disableCSS } )
-						}
-					/>
-					<ToggleControl
-						label={ __( 'Disable only font styles', 'same-posts' ) }
-						checked={ !! disableFontStyles }
-						onChange={ () =>
-							setAttributes( {
-								disableFontStyles: ! disableFontStyles,
-							} )
-						}
-					/>
-					<ToggleControl
-						label={ __( "Disable Theme's styles", 'same-posts' ) }
-						checked={ !! disableThemeStyles }
-						onChange={ () =>
-							setAttributes( {
-								disableThemeStyles: ! disableThemeStyles,
-							} )
-						}
 					/>
 				</PanelBody>
 			</InspectorControls>

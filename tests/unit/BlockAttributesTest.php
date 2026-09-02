@@ -281,7 +281,6 @@ class BlockAttributesTest extends TestCase {
 				'dateFormat'         => 'd.m.Y',
 				'dateLink'           => true,
 				'author'             => false,
-				'disableThemeStyles' => true,
 			)
 		);
 
@@ -309,22 +308,6 @@ class BlockAttributesTest extends TestCase {
 			),
 			$instance
 		);
-	}
-
-	/**
-	 * The General panel controls stylesheet loading, not the query or the
-	 * markup of a single item, so those attributes have no instance counterpart.
-	 */
-	public function test_style_attributes_do_not_leak_into_the_instance() {
-		$instance = block_attributes_to_instance(
-			array(
-				'disableCSS'         => true,
-				'disableFontStyles'  => true,
-				'disableThemeStyles' => true,
-			)
-		);
-
-		$this->assertSame( array(), $instance );
 	}
 
 	public function test_every_mapped_attribute_has_a_unique_instance_key() {

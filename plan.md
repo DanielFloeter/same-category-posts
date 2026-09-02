@@ -199,7 +199,6 @@ Jede Phase endet mit `npm run build` + manuellem Test in WordPress
 
 - Archives-Reste aus `src/edit.js` entfernen: `groupBy`, `displayAsDropdown`,
   `showPostCounts`, `QueryControls`.
-- General-Panel: `disableCSS` und `disableFontStyles` an ihre eigenen Attribute binden.
 - `block.json`: alle Attribute mit `type` und `default` versehen; tote Attribute
   (`categorySuggestions`, `selectCategories`, `groupBy`, `displayAsDropdown`,
   `showPostCounts`) entfernen; `renderCallback`-Zeile löschen.

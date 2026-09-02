@@ -22,18 +22,6 @@
             "type": "boolean",
             "default": false
         },
-        "disableCSS": {
-            "type": "boolean",
-            "default": false
-        },
-        "disableFontStyles": {
-            "type": "boolean",
-            "default": false
-        },
-        "disableThemeStyles": {
-            "type": "boolean",
-            "default": false
-        },
         "sortBy": {
             "type": "string",
             "default": "date"
