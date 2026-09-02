@@ -3,7 +3,7 @@ Contributors: kometschuh, mkrdip
 Donate link: https://wordpress.org/support/plugin/same-category-posts/reviews/?filter=5
 Tags: related posts, related, custom post type, products, events
 Requires at least: 6.3
-Tested up to: 6.9
+Tested up to: 7.1
 Requires PHP: 7.2
 Stable tag: 1.2.0
 License: GPLv2 or later 
