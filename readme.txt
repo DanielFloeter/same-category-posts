@@ -5,7 +5,7 @@ Tags: related posts, same category, category posts, posts block, custom post typ
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later 
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,10 @@ The list is built from the terms the post is saved with. A post that has no cate
 4. The widget configuration dialog.
 
 == Changelog ==
+
+= 1.2.1 - September 23 2026  =
+* Block preview on new or unsaved post pages
+* Block preview hint on pages without categories
 
 = 1.2.0 - September 02 2026  =
 * Gutenberg Block support

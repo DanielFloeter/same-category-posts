@@ -4,7 +4,7 @@ Plugin Name: Same Category Posts
 Plugin URI: https://wordpress.org/plugins/same-category-posts/
 Description: Show posts related to the current category or other custom post types, as a widget and as a block.
 Author: Daniel Floeter
-Version: 1.2.0
+Version: 1.2.1
 Author URI: https://profiles.wordpress.org/kometschuh/
 Requires at least: 6.3
 Requires PHP: 7.2
@@ -16,7 +16,7 @@ namespace samePosts;
 // Don't call the file directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-define( 'SAME_CATEGORY_POSTS_VERSION', "1.2.0");
+define( 'SAME_CATEGORY_POSTS_VERSION', "1.2.1");
 
 require_once __DIR__ . '/includes/image-size.php';
 require_once __DIR__ . '/same-posts-block.php';
