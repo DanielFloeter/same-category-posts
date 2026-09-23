@@ -4,6 +4,15 @@
     "title": "Same Category Posts",
     "category": "widgets",
     "description": "Show posts related to the current category or other custom post types.",
+    "keywords": [
+        "related posts",
+        "similar posts",
+        "same category",
+        "more posts",
+        "read more",
+        "custom post type",
+        "posts widget"
+    ],
     "textdomain": "same-posts",
     "supports": {
         "align": true,

@@ -22,13 +22,13 @@ registerBlockType(name, {
         'same-posts'
     ),
     keywords: [
-        __('related'),
-        __('posts'),
-        __('posts widget'),
-        __('custom post type'),
-        __('products'),
-        __('events'),
-        __('tiptoppress'),
+        __('related posts', 'same-posts'),
+        __('similar posts', 'same-posts'),
+        __('same category', 'same-posts'),
+        __('more posts', 'same-posts'),
+        __('read more', 'same-posts'),
+        __('custom post type', 'same-posts'),
+        __('posts widget', 'same-posts'),
     ],
     transforms: {
         from: [{
