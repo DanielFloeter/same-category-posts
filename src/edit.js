@@ -8,6 +8,7 @@ import {
 	Disabled,
 	FormTokenField,
 	PanelBody,
+	Placeholder,
 	RadioControl,
 	SelectControl,
 	TextControl,
@@ -16,6 +17,8 @@ import {
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
 import ServerSideRender from '@wordpress/server-side-render';
+
+import BlockIcon from './icon';
 
 /**
  * Options of the "Sort by" control.
@@ -131,6 +134,48 @@ export default function Edit( { attributes, setAttributes } ) {
 	const previewTerms = useMemo(
 		() => JSON.parse( previewTermsJson ),
 		[ previewTermsJson ]
+	);
+
+	// Singular name of the post type being edited, e.g. "Page", for the hint
+	// shown when the preview is empty.
+	const postTypeLabel = useSelect( ( select ) => {
+		const editor = select( 'core/editor' );
+		const postType = editor && editor.getCurrentPostType();
+		const postTypeObject =
+			postType && select( 'core' ).getPostType( postType );
+
+		return postTypeObject ? postTypeObject.labels.singular_name : '';
+	}, [] );
+
+	// Without a taxonomy -- pages, typically -- there are no terms to relate
+	// to, so the block is bound to stay empty.
+	const hasTaxonomies = Object.keys( previewTerms ).length > 0;
+
+	/**
+	 * Shown in place of the preview when the server rendered nothing.
+	 *
+	 * @return {WPElement} Element to render.
+	 */
+	const EmptyPreview = () => (
+		<Placeholder
+			icon={ <BlockIcon /> }
+			label={ __( 'Same Category Posts', 'same-posts' ) }
+			instructions={
+				hasTaxonomies
+					? __(
+							'No posts found that share the categories or terms of this post. Check the categories in the sidebar and the filter settings of the block.',
+							'same-posts'
+					  )
+					: sprintf(
+							/* translators: %s: Singular name of the post type, e.g. "Page". */
+							__(
+								'This block lists posts from the same categories as the current post. The post type "%s" has no categories, so there is nothing to show here. Use the block in posts, in post templates or on archive pages.',
+								'same-posts'
+							),
+							postTypeLabel || __( 'Page', 'same-posts' )
+					  )
+			}
+		/>
 	);
 
 	// Post types with their taxonomies and terms, grouped the same way the
@@ -595,6 +640,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						urlQueryArgs={ {
 							samePostsPreviewTerms: previewTerms,
 						} }
+						EmptyResponsePlaceholder={ EmptyPreview }
 					/>
 				</Disabled>
 			</div>
