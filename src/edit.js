@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Fragment, useEffect, useState } from '@wordpress/element';
+import { Fragment, useEffect, useMemo, useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	Disabled,
@@ -14,6 +14,7 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
+import { useSelect } from '@wordpress/data';
 import ServerSideRender from '@wordpress/server-side-render';
 
 /**
@@ -90,6 +91,47 @@ export default function Edit( { attributes, setAttributes } ) {
 	} = attributes;
 
 	const blockProps = useBlockProps();
+
+	// The terms picked in the post's sidebar, saved or not, keyed by
+	// taxonomy. The preview is rendered on the server, which only knows the
+	// saved terms -- a new post has none, so the block would stay empty until
+	// the post is saved. See preview_terms() in same-posts-block.php.
+	//
+	// Selected as a JSON string: a fresh object on every call would count as
+	// a change and re-render the block on every store update.
+	const previewTermsJson = useSelect( ( select ) => {
+		const editor = select( 'core/editor' );
+		const taxonomies = select( 'core' ).getTaxonomies( { per_page: -1 } );
+
+		if ( ! editor || ! taxonomies ) {
+			return '{}';
+		}
+
+		const postType = editor.getCurrentPostType();
+		const terms = {};
+
+		taxonomies
+			.filter( ( taxonomy ) => taxonomy.types.includes( postType ) )
+			.forEach( ( taxonomy ) => {
+				const termIds = editor.getEditedPostAttribute(
+					taxonomy.rest_base
+				);
+
+				if ( Array.isArray( termIds ) ) {
+					// An empty list has to arrive as well, it means "no
+					// terms" -- an empty query arg would be dropped.
+					terms[ taxonomy.slug ] = termIds.length
+						? termIds.join( ',' )
+						: '0';
+				}
+			} );
+
+		return JSON.stringify( terms );
+	}, [] );
+	const previewTerms = useMemo(
+		() => JSON.parse( previewTermsJson ),
+		[ previewTermsJson ]
+	);
 
 	// Post types with their taxonomies and terms, grouped the same way the
 	// widget's form groups them. See same-posts-rest.php.
@@ -550,6 +592,9 @@ export default function Edit( { attributes, setAttributes } ) {
 					<ServerSideRender
 						block="tiptip/same-posts-block"
 						attributes={ attributes }
+						urlQueryArgs={ {
+							samePostsPreviewTerms: previewTerms,
+						} }
 					/>
 				</Disabled>
 			</div>
