@@ -1,9 +1,13 @@
 /**
- * The following styles get applied inside the editor only.
- *
- * Replace them with your own styles or remove the file completely.
+ * The block icon in the block list and the block toolbar.
+ * The icon is an SVG, so we color it with CSS fill.
  */
+.editor-block-list-item-tiptip-same-posts-block .same-posts-block-icon g,
+.block-editor-block-icon .same-posts-block-icon g {
+    fill: var(--wp-admin-theme-color,#3858e9);
+}
 
-.wp-block-tiptip-same-posts-block {
-    border: 1px dotted #f00;
+.is-selected .editor-block-list-item-tiptip-same-posts-block .same-posts-block-icon g,
+.is-selected .block-editor-block-icon .same-posts-block-icon g {
+    fill: #72aee6;
 }

@@ -19,6 +19,7 @@ import { useSelect } from '@wordpress/data';
 import ServerSideRender from '@wordpress/server-side-render';
 
 import BlockIcon from './icon';
+import './editor.scss';
 
 /**
  * Options of the "Sort by" control.

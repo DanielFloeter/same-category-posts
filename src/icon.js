@@ -3,7 +3,7 @@ import { Icon } from '@wordpress/components';
 const MyIcon = () => (
 	<Icon
 		icon={
-			<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+			<svg className="same-posts-block-icon" version="1.0" xmlns="http://www.w3.org/2000/svg"
 			width="1960.000000pt" height="1960.000000pt" viewBox="0 0 1960.000000 1960.000000"
 			preserveAspectRatio="xMidYMid meet">
 
